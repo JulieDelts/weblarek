@@ -5,7 +5,7 @@ import {
   IOrderSentResponse,
   IProductsResponse,
 } from "../../types";
-import { settings, API_URL } from "../../utils/constants";
+import { settings } from "../../utils/constants";
 
 export class WebLarekApi {
   private api: Api;
