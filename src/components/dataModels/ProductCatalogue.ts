@@ -1,38 +1,19 @@
 import { IProduct } from "../../types/index";
 
 export class ProductCatalogue {
-  private products: IProduct[];
-  private selectedProduct: IProduct | null;
-
-  constructor(
-    products: IProduct[] = [],
-    selectedProduct: IProduct | null = null,
-  ) {
-    this.products = products;
-    this.selectedProduct = selectedProduct;
-  }
+  private products: IProduct[] = [];
+  private selectedProduct: IProduct | null = null;
 
   addProducts(products: IProduct[]): void {
-    this.products =
-      this.products.length > 0 ? [...this.products, ...products] : products;
+    this.products = products;
   }
 
   getAllProducts(): IProduct[] {
     return this.products;
   }
 
-  getProductById(id: string): { product?: IProduct; error?: string } {
-    const product = this.products.find((product) => product.id === id);
-
-    if (!product) {
-      return {
-        error: `Товар с идентификатором "${id}" не найден`,
-      };
-    }
-
-    return {
-      product: product,
-    };
+  getProductById(id: string): IProduct | undefined {
+    return this.products.find((product) => product.id === id);
   }
 
   setSelectedProduct(product: IProduct): void {
