@@ -2,7 +2,6 @@ import { IApi } from "../../types";
 import {
   IOrderSentRequest,
   IOrderSentResponse,
-  IOrderSentErrorResponse,
   IProductsResponse,
 } from "../../types";
 import { settings } from "../../utils/constants";
@@ -22,8 +21,8 @@ export class WebLarekApi {
 
   async postOrderAsync(
     orderData: IOrderSentRequest,
-  ): Promise<IOrderSentResponse | IOrderSentErrorResponse> {
-    return await this.api.post<IOrderSentResponse | IOrderSentErrorResponse>(
+  ): Promise<IOrderSentResponse> {
+    return await this.api.post<IOrderSentResponse>(
       `${settings.webLarekOrderSentEndpoint}`,
       orderData,
       "POST",
