@@ -1,61 +1,49 @@
 import "./scss/styles.scss";
-import { PaymentMethod, IProduct, IOrderSentRequest } from "./types/index.ts";
+import { IProduct, IOrderSentRequest } from "./types/index.ts";
 import { Customer } from "./components/dataModels/Customer.ts";
 import { Cart } from "./components/dataModels/Cart.ts";
 import { ProductCatalogue } from "./components/dataModels/ProductCatalogue.ts";
 import { apiProducts } from "./utils/data";
 import { Api } from "./components/base/Api.ts";
 import { API_URL } from "./utils/constants.ts";
-import { WebLarekApi } from "./components/base/WebLarekApi.ts";
+import { WebLarekApi } from "./components/dataSources/WebLarekApi.ts";
 
 const customer = new Customer();
 console.log("Тестирование Customer");
 
 console.log("Метод setPayment()");
-const payment = customer.setPayment(PaymentMethod.CARD);
-console.log("Результат:", payment);
+customer.setPayment("card");
 
 console.log("Метод setAddress()");
-const address = customer.setAddress("ул. Набережная, д. 29");
-console.log("Результат:", address);
+customer.setAddress("ул. Набережная, д. 29");
 
 console.log("Метод setEmail()");
-const email = customer.setEmail("test@yandex.ru");
-console.log("Результат:", email);
+customer.setEmail("test@yandex.ru");
 
 console.log("Метод setPhone()");
-const phone = customer.setPhone("+89163577897");
-console.log("Результат:", phone);
+customer.setPhone("+89163577897");
 
 console.log("Метод getData()");
 const data = customer.getData();
-console.log("Данные покупателя:", data.data);
+console.log("Данные покупателя:", data);
 
 console.log("Метод clearData():");
 customer.clearData();
 const clearedData = customer.getData();
-console.log("Данные после очистки:", clearedData.data);
+console.log("Данные после очистки:", clearedData);
 
 console.log("----------------------------------------------------------");
 
 const cart = new Cart();
-const testProducts: IProduct[] = apiProducts.items.map((item) => ({
-  id: item.id,
-  description: item.description,
-  image: item.image,
-  title: item.title,
-  category: item.category,
-  price: item.price,
-}));
+const testProducts: IProduct[] = apiProducts.items;
 console.log("Тестирование Cart");
 
 console.log("Метод addProduct()");
-const addProduct = cart.addProduct(testProducts[0], 2);
-console.log("Результат:", addProduct);
+cart.addProduct(testProducts[0]);
 
 console.log("Метод getAllProducts()");
 const allCartProducts = cart.getAllProducts();
-console.log("Товары в корзине:", allCartProducts.entries());
+console.log("Товары в корзине:", allCartProducts);
 
 console.log("Метод getAllProductsCount()");
 const totalCount = cart.getAllProductsCount();
@@ -69,13 +57,8 @@ console.log("Метод hasProduct()");
 const hasProduct = cart.hasProduct(testProducts[0].id);
 console.log(`Есть ли товар "${testProducts[0].title}":`, hasProduct);
 
-console.log("Метод decrementProduct()");
-const decrementResult = cart.decrementProduct(testProducts[0]);
-console.log("Результат:", decrementResult);
-
 console.log("Метод removeProduct()");
-const removeResult = cart.removeProduct(testProducts[0]);
-console.log("Результат:", removeResult);
+cart.removeProduct(testProducts[0]);
 
 console.log("Метод clearCart()");
 cart.clearCart();
@@ -118,12 +101,16 @@ const webLarekApi = new WebLarekApi(api);
 console.log("Тестирование WebLarekApi");
 
 console.log("Метод getProductsAsync()");
-const products = await webLarekApi.getProductsAsync();
-console.log("Полученные товары:", products);
+try {
+  const products = await webLarekApi.getProductsAsync();
+  console.log("Полученные товары:", products);
+} catch (error: unknown) {
+  console.log(error);
+}
 
 console.log("Метод postOrderAsync(order)");
 const order: IOrderSentRequest = {
-  payment: "online",
+  payment: "card",
   email: "test@test.ru",
   phone: "+71234567890",
   address: "Spb Vosstania 1",
@@ -134,5 +121,9 @@ const order: IOrderSentRequest = {
   ],
 };
 
-const orderResult = await webLarekApi.postOrderAsync(order);
-console.log("Результат создания заказа:", orderResult);
+try {
+  const orderResult = await webLarekApi.postOrderAsync(order);
+  console.log("Результат создания заказа:", orderResult);
+} catch (error: unknown) {
+  console.log(error);
+}

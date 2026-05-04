@@ -10,10 +10,10 @@ export interface IApi {
 }
 
 export interface ICustomer {
-  payment?: PaymentMethod;
-  address?: string;
-  email?: string;
-  phone?: string;
+  payment: PaymentMethod;
+  address: string;
+  email: string;
+  phone: string;
 }
 
 export interface IProduct {
@@ -25,21 +25,14 @@ export interface IProduct {
   price: number | null;
 }
 
-export enum PaymentMethod {
-  CARD = "card",
-  CASH = "cash",
-}
+export type PaymentMethod = "card" | "cash" | "";
 
 export interface IProductsResponse {
   total: number;
   items: IProduct[];
 }
 
-export interface IOrderSentRequest {
-  payment: string;
-  email: string;
-  phone: string;
-  address: string;
+export interface IOrderSentRequest extends ICustomer {
   total: number;
   items: string[];
 }
@@ -47,4 +40,8 @@ export interface IOrderSentRequest {
 export interface IOrderSentResponse {
   id: string;
   total: number;
+}
+
+export interface IOrderSentErrorResponse {
+  error: string;
 }
