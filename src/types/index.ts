@@ -41,7 +41,3 @@ export interface IOrderSentResponse {
   id: string;
   total: number;
 }
-
-export interface IOrderSentErrorResponse {
-  error: string;
-}

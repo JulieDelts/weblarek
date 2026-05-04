@@ -252,4 +252,4 @@ Presenter - презентер содержит основную логику п
 Методы класса:
 `getProductsAsync(): Promise<IProductsResponse>` получает список доступных товаров с сервера. У метода нет параметров. Возвращаемым значением является объект Promise, который разрешается в объект, реализующий интерфейс `IProductsResponse`.
 
-`postOrderAsync(orderData: IOrderSentRequest): Promise<IOrderSentResponse | IOrderSentErrorResponse>` отправляет данные заказа на сервер. Параметром метода является объект, содержащий данные заказа `orderData: IOrderSentRequest`. Возвращаемым значением является объект Promise, который разрешается в объект, реализующий интерфейс `IOrderSentResponse` или `IOrderSentErrorResponse`.
+`postOrderAsync(orderData: IOrderSentRequest): Promise<IOrderSentResponse>` отправляет данные заказа на сервер. Параметром метода является объект, содержащий данные заказа `orderData: IOrderSentRequest`. Возвращаемым значением является объект Promise, который разрешается в объект, реализующий интерфейс `IOrderSentResponse`.
