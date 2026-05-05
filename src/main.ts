@@ -27,10 +27,34 @@ console.log("Метод getData()");
 const data = customer.getData();
 console.log("Данные покупателя:", data);
 
+console.log("Метод validateEmail() с заполненной электронной почтой:");
+const emailValidation = customer.validateEmail();
+console.log("Результат валидации email:", emailValidation);
+
+console.log("Метод validatePhone() с заполненным телефоном:");
+const phoneValidation = customer.validatePhone();
+console.log("Результат валидации телефона:", phoneValidation);
+
+console.log("Метод validateAddress() с заполненным адресом:");
+const addressValidation = customer.validateAddress();
+console.log("Результат валидации адреса:", addressValidation);
+
 console.log("Метод clearData():");
 customer.clearData();
 const clearedData = customer.getData();
 console.log("Данные после очистки:", clearedData);
+
+console.log("Метод validateEmail() с пустой электронной почтой:");
+const emptyEmailValidation = customer.validateEmail();
+console.log("Результат валидации email:", emptyEmailValidation);
+
+console.log("Метод validatePhone() с пустым телефоном:");
+const emptyPhoneValidation = customer.validatePhone();
+console.log("Результат валидации телефона:", emptyPhoneValidation);
+
+console.log("Метод validateAddress() с пустым адресом:");
+const emptyAddressValidation = customer.validateAddress();
+console.log("Результат валидации адреса:", emptyAddressValidation);
 
 console.log("----------------------------------------------------------");
 
@@ -40,6 +64,7 @@ console.log("Тестирование Cart");
 
 console.log("Метод addProduct()");
 cart.addProduct(testProducts[0]);
+cart.addProduct(testProducts[1]);
 
 console.log("Метод getAllProducts()");
 const allCartProducts = cart.getAllProducts();
@@ -60,10 +85,16 @@ console.log(`Есть ли товар "${testProducts[0].title}":`, hasProduct);
 console.log("Метод removeProduct()");
 cart.removeProduct(testProducts[0]);
 
+const allCartProductsAfterRemoval = cart.getAllProducts();
+console.log(
+  "Товары в корзине после удаления одного из товаров:",
+  allCartProductsAfterRemoval,
+);
+
 console.log("Метод clearCart()");
 cart.clearCart();
 const clearedCart = cart.getAllProducts();
-console.log("Корзина после очистки:", Array.from(clearedCart.entries()));
+console.log("Корзина после очистки:", clearedCart);
 
 console.log("----------------------------------------------------------");
 

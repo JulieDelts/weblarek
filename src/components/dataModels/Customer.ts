@@ -37,25 +37,25 @@ export class Customer {
     };
   }
 
-  validateEmail(email: string): { isValid: boolean; error?: string } {
-    if (!email || email.trim() === "") {
+  validateEmail(): { isValid: boolean; error?: string } {
+    if (!this.customer.email) {
       return { isValid: false, error: "Электронная почта не задана." };
     }
     return { isValid: true };
   }
 
-  validatePhone(phone: string): { isValid: boolean; error?: string } {
-    if (!phone || phone.trim() === "") {
+  validatePhone(): { isValid: boolean; error?: string } {
+    if (!this.customer.phone) {
       return { isValid: false, error: "Телефон не задан." };
     }
     return { isValid: true };
   }
 
-  validateAddress(address: string): {
+  validateAddress(): {
     isValid: boolean;
     error?: string;
   } {
-    if (!address || address.trim() === "") {
+    if (!this.customer.address) {
       return { isValid: false, error: "Адрес не задан." };
     }
     return { isValid: true };

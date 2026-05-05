@@ -15,7 +15,7 @@ export class WebLarekApi {
 
   async getProductsAsync(): Promise<IProductsResponse> {
     return await this.api.get<IProductsResponse>(
-      `${settings.webLarekProductsEndpoint}`,
+      settings.webLarekProductsEndpoint,
     );
   }
 
@@ -23,9 +23,8 @@ export class WebLarekApi {
     orderData: IOrderSentRequest,
   ): Promise<IOrderSentResponse> {
     return await this.api.post<IOrderSentResponse>(
-      `${settings.webLarekOrderSentEndpoint}`,
+      settings.webLarekOrderSentEndpoint,
       orderData,
-      "POST",
     );
   }
 }
