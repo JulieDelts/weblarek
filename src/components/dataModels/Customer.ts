@@ -36,28 +36,4 @@ export class Customer {
       phone: "",
     };
   }
-
-  validateEmail(): { isValid: boolean; error?: string } {
-    if (!this.customer.email) {
-      return { isValid: false, error: "Электронная почта не задана." };
-    }
-    return { isValid: true };
-  }
-
-  validatePhone(): { isValid: boolean; error?: string } {
-    if (!this.customer.phone) {
-      return { isValid: false, error: "Телефон не задан." };
-    }
-    return { isValid: true };
-  }
-
-  validateAddress(): {
-    isValid: boolean;
-    error?: string;
-  } {
-    if (!this.customer.address) {
-      return { isValid: false, error: "Адрес не задан." };
-    }
-    return { isValid: true };
-  }
 }
