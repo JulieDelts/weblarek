@@ -1,8 +1,5 @@
+import { IProductCatalogueView } from "../../types";
 import { Component } from "../base/Component";
-
-export interface IProductCatalogueView {
-  catalogue: HTMLElement[];
-}
 
 export class ProductCatalogueView extends Component<IProductCatalogueView> {
   protected catalogueElement: HTMLElement;

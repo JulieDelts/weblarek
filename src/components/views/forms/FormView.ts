@@ -1,13 +1,9 @@
 import { Component } from "../../base/Component";
 import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
+import { IFormView } from "../../../types";
 
-export interface IFormStateView {
-  valid: boolean;
-  errors: string;
-}
-
-export abstract class FormView<T> extends Component<IFormStateView> {
+export abstract class FormView<T> extends Component<IFormView> {
   protected errorsElement: HTMLElement;
   protected submitButtonElement: HTMLButtonElement;
 
@@ -30,19 +26,10 @@ export abstract class FormView<T> extends Component<IFormStateView> {
       event.preventDefault();
       this.handleSubmit();
     });
-
-    this.container.addEventListener("input", () => {
-      this.validate();
-    });
-
-    this.container.addEventListener("change", () => {
-      this.validate();
-    });
   }
 
+  protected abstract getFormData(): T;
   protected abstract handleSubmit(): void;
-  public abstract validate(): boolean;
-  public abstract getFormData(): T;
 
   set valid(value: boolean) {
     this.submitButtonElement.disabled = !value;
@@ -52,17 +39,11 @@ export abstract class FormView<T> extends Component<IFormStateView> {
     this.errorsElement.textContent = value;
   }
 
-  public reset(): void {
-    const form = this.container as HTMLFormElement;
-    form.reset();
-    this.errors = "";
-    this.valid = false;
+  setValidState(isValid: boolean): void {
+    this.valid = isValid;
   }
 
-  render(data?: Partial<IFormStateView>): HTMLElement {
-    if (data) {
-      Object.assign(this as object, data);
-    }
-    return this.container;
+  setValidationErrors(errors: string[]): void {
+    this.errors = errors.join("; ");
   }
 }

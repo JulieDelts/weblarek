@@ -1,10 +1,7 @@
 import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents } from "../base/Events";
-
-export interface ISuccessModalView {
-  total: number;
-}
+import { ISuccessModalView } from "../../types";
 
 export class SuccessModalView extends Component<ISuccessModalView> {
   protected descriptionElement: HTMLElement;

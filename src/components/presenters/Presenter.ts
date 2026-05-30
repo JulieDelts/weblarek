@@ -1,14 +1,22 @@
-import { IOrderSentResponse, IProduct, PaymentMethod } from "../../types";
+import {
+  IContactsFormView,
+  IOrderFormView,
+  IOrderSentRequest,
+  IProduct,
+  PaymentMethod,
+} from "../../types";
 import { IEvents } from "../base/Events";
 import { Cart } from "../dataModels/Cart";
 import { Customer } from "../dataModels/Customer";
 import { ProductCatalogue } from "../dataModels/ProductCatalogue";
+import { WebLarekApi } from "../dataSources/WebLarekApi";
 import { ViewFactory } from "../factories/ViewFactory";
 
-export class AppPresenter {
+export class Presenter {
   constructor(
     events: IEvents,
     private viewFactory: ViewFactory,
+    private webApi: WebLarekApi,
     private productCatalogue: ProductCatalogue,
     private cart: Cart,
     private customer: Customer,
@@ -16,8 +24,13 @@ export class AppPresenter {
     this.initEventHandlers(events);
   }
 
-  loadCatalogue(products: IProduct[]): void {
-    this.productCatalogue.addProducts(products);
+  async loadCatalogue(): Promise<void> {
+    try {
+      const products = await this.webApi.getProductsAsync();
+      this.productCatalogue.addProducts(products.items);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   private initEventHandlers(events: IEvents): void {
@@ -27,10 +40,12 @@ export class AppPresenter {
     events.on("basket:add", this.handleProductAddedToCart.bind(this));
     events.on("basket:remove", this.handleProductRemovedFromCart.bind(this));
     events.on("basket:open", this.handleCartOpened.bind(this));
-    events.on("order:start", this.handleOrderProcessStarted.bind(this));
-    events.on("order:next", this.handleOrderNextStepStarted.bind(this));
-    events.on("contacts:submit", this.handleSubmitOrder.bind(this));
     events.on("modal:close", this.handleModalClosed.bind(this));
+    events.on("order:start", this.handleOrderStart.bind(this));
+    events.on("order:form:submit", this.handleOrderFormSubmit.bind(this));
+    events.on("contacts:form:submit", this.handleContactsFormSubmit.bind(this));
+    events.on("order:form:change", this.handleOrderFormChange.bind(this));
+    events.on("contacts:form:change", this.handleContactsFormChange.bind(this));
   }
 
   private handleCatalogueChanged(data: { products: IProduct[] }): void {
@@ -85,22 +100,66 @@ export class AppPresenter {
     this.viewFactory.createCart(products, total);
   }
 
-  private handleOrderProcessStarted(): void {
-    const customerData = this.customer.getData();
+  private handleOrderStart(): void {
+    this.viewFactory.createOrderForm(true, []);
+  }
+
+  private handleOrderFormChange(data: IOrderFormView): void {
+    this.customer.setPayment(data.payment as PaymentMethod);
+    this.customer.setAddress(data.address);
+    var validation = this.customer.validateOrderData();
     this.viewFactory.createOrderForm(
-      customerData.payment,
-      customerData.address,
+      validation.isValid,
+      validation.errors,
+      data.payment,
+      data.address,
     );
   }
 
-  private handleOrderNextStepStarted(data: {
-    payment: PaymentMethod;
-    address: string;
-  }): void {
-    this.customer.setPayment(data.payment);
+  private handleContactsFormChange(data: IContactsFormView): void {
+    this.customer.setEmail(data.email);
+    this.customer.setPhone(data.phone);
+    var validation = this.customer.validateContactsData();
+    this.viewFactory.createContactsForm(
+      validation.isValid,
+      validation.errors,
+      data.email,
+      data.phone,
+    );
+  }
+
+  private handleOrderFormSubmit(data: IOrderFormView): void {
+    this.customer.setPayment(data.payment as PaymentMethod);
     this.customer.setAddress(data.address);
-    const customerData = this.customer.getData();
-    this.viewFactory.createContactsForm(customerData.email, customerData.phone);
+    const validation = this.customer.validateOrderData();
+
+    if (validation.isValid) {
+      this.viewFactory.createContactsForm(true, []);
+    } else {
+      this.viewFactory.createOrderForm(
+        validation.isValid,
+        validation.errors,
+        data.payment,
+        data.address,
+      );
+    }
+  }
+
+  private handleContactsFormSubmit(data: IContactsFormView): void {
+    this.customer.setEmail(data.email);
+    this.customer.setPhone(data.phone);
+    const validation = this.customer.validateContactsData();
+
+    if (validation.isValid) {
+      this.submitOrder();
+    } else {
+      this.viewFactory.createContactsForm(
+        validation.isValid,
+        validation.errors,
+        data.email,
+        data.phone,
+      );
+    }
   }
 
   private handleModalClosed(): void {
@@ -108,16 +167,21 @@ export class AppPresenter {
     modal.close();
   }
 
-  private async handleSubmitOrder(): Promise<void> {
-    const orderData = {
+  private async submitOrder(): Promise<void> {
+    const order: IOrderSentRequest = {
       items: this.cart.getAllProducts().map((p) => p.id),
       total: this.cart.getAllProductsCost(),
       ...this.customer.getData(),
     };
-    const result: IOrderSentResponse = { id: "123", total: orderData.total };
 
-    this.cart.clearCart();
-    this.customer.clearData();
-    this.viewFactory.createSuccessModal(result.total);
+    try {
+      const orderResult = await this.webApi.postOrderAsync(order);
+
+      this.cart.clearCart();
+      this.customer.clearData();
+      this.viewFactory.createSuccessModal(orderResult.total);
+    } catch (error: unknown) {
+      console.log(error);
+    }
   }
 }

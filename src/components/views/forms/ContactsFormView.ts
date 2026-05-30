@@ -1,11 +1,7 @@
 import { FormView } from "./FormView";
 import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
-
-export interface IContactsFormView {
-  email: string;
-  phone: string;
-}
+import { IContactsFormView } from "../../../types";
 
 export class ContactsFormView extends FormView<IContactsFormView> {
   protected emailInputElement: HTMLInputElement;
@@ -22,6 +18,14 @@ export class ContactsFormView extends FormView<IContactsFormView> {
       'input[name="phone"]',
       this.container,
     );
+
+    this.emailInputElement.addEventListener("blur", () => {
+      this.emitFormChange();
+    });
+
+    this.phoneInputElement.addEventListener("blur", () => {
+      this.emitFormChange();
+    });
   }
 
   set email(value: string) {
@@ -32,12 +36,6 @@ export class ContactsFormView extends FormView<IContactsFormView> {
     this.phoneInputElement.value = value;
   }
 
-  protected handleSubmit(): void {
-    if (this.validate()) {
-      this.events.emit("contacts:submit", this.getFormData());
-    }
-  }
-
   getFormData(): IContactsFormView {
     return {
       email: this.emailInputElement.value.trim(),
@@ -45,22 +43,11 @@ export class ContactsFormView extends FormView<IContactsFormView> {
     };
   }
 
-  validate(): boolean {
-    const email = this.emailInputElement.value.trim();
-    const phone = this.phoneInputElement.value.trim();
-    const isValid = email !== "" && phone !== "";
+  protected emitFormChange(): void {
+    this.events.emit("contacts:form:change", this.getFormData());
+  }
 
-    if (!email && !phone) {
-      this.errors = "Заполните email и телефон";
-    } else if (!email) {
-      this.errors = "Укажите email";
-    } else if (!phone) {
-      this.errors = "Укажите телефон";
-    } else {
-      this.errors = "";
-    }
-
-    this.valid = isValid;
-    return isValid;
+  protected handleSubmit(): void {
+    this.events.emit("contacts:form:submit", this.getFormData());
   }
 }

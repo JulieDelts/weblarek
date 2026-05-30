@@ -5,11 +5,6 @@ import { categoryMap, CDN_URL } from "../../../utils/constants";
 
 type CategoryKey = keyof typeof categoryMap;
 
-// export interface ICatalogueCardView extends ICardView {
-//   image: string;
-//   category: string;
-// }
-
 export class CatalogueCardView extends CardView {
   protected imageElement: HTMLImageElement;
   protected categoryElement: HTMLElement;

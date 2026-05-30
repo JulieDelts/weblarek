@@ -2,11 +2,6 @@ import { CatalogueCardView } from "./CatalogueCardView";
 import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
 
-// export interface IPreviewCard extends ICatalogueCardView {
-//   description: string;
-//   buttonText: string;
-// }
-
 export class PreviewCardView extends CatalogueCardView {
   protected descriptionElement: HTMLElement;
   protected buttonElement: HTMLButtonElement;
@@ -47,6 +42,10 @@ export class PreviewCardView extends CatalogueCardView {
   set isProductInBasket(value: boolean) {
     this.inBasket = value;
     this.updateButtonState();
+  }
+
+  get isProductInBasket(): boolean {
+    return this.inBasket;
   }
 
   protected updateButtonState(): void {

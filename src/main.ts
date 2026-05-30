@@ -5,7 +5,7 @@ import { Cart } from "./components/dataModels/Cart";
 import { Customer } from "./components/dataModels/Customer";
 import { ProductCatalogue } from "./components/dataModels/ProductCatalogue";
 import { ViewFactory } from "./components/factories/ViewFactory";
-import { AppPresenter } from "./components/presenters/Presenter";
+import { Presenter } from "./components/presenters/Presenter";
 import { Api } from "./components/base/Api";
 import { WebLarekApi } from "./components/dataSources/WebLarekApi";
 import { API_URL } from "./utils/constants";
@@ -26,8 +26,8 @@ if (!headerContainer) throw new Error("Контейнер для шапки не
 const templates = {
   cardCatalog: document.getElementById("card-catalog") as HTMLTemplateElement,
   cardPreview: document.getElementById("card-preview") as HTMLTemplateElement,
-  cardBasket: document.getElementById("card-basket") as HTMLTemplateElement,
-  basket: document.getElementById("basket") as HTMLTemplateElement,
+  cardCart: document.getElementById("card-basket") as HTMLTemplateElement,
+  cart: document.getElementById("basket") as HTMLTemplateElement,
   order: document.getElementById("order") as HTMLTemplateElement,
   contacts: document.getElementById("contacts") as HTMLTemplateElement,
   success: document.getElementById("success") as HTMLTemplateElement,
@@ -49,20 +49,16 @@ const viewFactory = new ViewFactory(
   headerContainer,
 );
 
-const app = new AppPresenter(
+const api = new Api(API_URL);
+const webLarekApi = new WebLarekApi(api);
+
+const app = new Presenter(
   events,
   viewFactory,
+  webLarekApi,
   productCatalogue,
   cart,
   customer,
 );
 
-const api = new Api(API_URL);
-const webLarekApi = new WebLarekApi(api);
-
-try {
-  const products = await webLarekApi.getProductsAsync();
-  app.loadCatalogue(products.items);
-} catch (error: unknown) {
-  console.log(error);
-}
+app.loadCatalogue();

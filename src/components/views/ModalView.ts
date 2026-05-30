@@ -1,10 +1,7 @@
 import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents } from "../base/Events";
-
-export interface IModalView {
-  content: HTMLElement;
-}
+import { IModalView } from "../../types";
 
 export class ModalView extends Component<IModalView> {
   protected closeButtonElement: HTMLButtonElement;
@@ -34,8 +31,6 @@ export class ModalView extends Component<IModalView> {
         events.emit("modal:close");
       }
     });
-
-    events.on("modal:close", this.close.bind(this));
   }
 
   set content(value: HTMLElement) {

@@ -1,10 +1,6 @@
-import { CardView, ICardView } from "./CardView";
+import { CardView } from "./CardView";
 import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
-
-export interface ICartCardView extends ICardView {
-  index: number;
-}
 
 export class CartCardView extends CardView {
   protected indexElement: HTMLElement;

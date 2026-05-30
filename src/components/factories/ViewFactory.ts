@@ -1,4 +1,4 @@
-import { IProduct } from "../../types";
+import { IProduct, IViewTemplates } from "../../types";
 import { IEvents } from "../base/Events";
 import { CartCardView } from "../views/cards/CartCardView";
 import { CatalogueCardView } from "../views/cards/CatalogueCardView";
@@ -10,16 +10,6 @@ import { HeaderView } from "../views/HeaderView";
 import { ModalView } from "../views/ModalView";
 import { ProductCatalogueView } from "../views/ProductCatalogueView";
 import { SuccessModalView } from "../views/SuccessModalView";
-
-export interface IViewTemplates {
-  cardCatalog: HTMLTemplateElement;
-  cardPreview: HTMLTemplateElement;
-  cardBasket: HTMLTemplateElement;
-  basket: HTMLTemplateElement;
-  order: HTMLTemplateElement;
-  contacts: HTMLTemplateElement;
-  success: HTMLTemplateElement;
-}
 
 export class ViewFactory {
   private events: IEvents;
@@ -45,20 +35,6 @@ export class ViewFactory {
     this.catalogueContainer = galleryContainer;
     this.modalContainer = modalContainer;
     this.headerContainer = headerContainer;
-  }
-
-  private getTemplate(templateName: keyof IViewTemplates): HTMLTemplateElement {
-    return this.templates[templateName];
-  }
-
-  private cloneElement(templateName: keyof IViewTemplates): HTMLElement {
-    const template = this.getTemplate(templateName);
-    const content = template.content.cloneNode(true) as DocumentFragment;
-    const element = content.firstElementChild as HTMLElement;
-    if (!element) {
-      throw new Error(`Шаблон "${templateName}" не найден. `);
-    }
-    return element;
   }
 
   getCatalogue(): ProductCatalogueView {
@@ -93,7 +69,7 @@ export class ViewFactory {
     header.counter = count;
   }
 
-  private createCatalogueCard(product: IProduct): HTMLElement {
+  createCatalogueCard(product: IProduct): HTMLElement {
     const element = this.cloneElement("cardCatalog");
     const card = new CatalogueCardView(element, this.events);
     card.id = product.id;
@@ -104,8 +80,8 @@ export class ViewFactory {
     return card.render();
   }
 
-  private createCartCard(product: IProduct, index: number): HTMLElement {
-    const element = this.cloneElement("cardBasket");
+  createCartCard(product: IProduct, index: number): HTMLElement {
+    const element = this.cloneElement("cardCart");
     const basketCard = new CartCardView(element, this.events);
     basketCard.id = product.id;
     basketCard.title = product.title;
@@ -131,7 +107,7 @@ export class ViewFactory {
   }
 
   createCart(products: IProduct[], total: number): void {
-    const element = this.cloneElement("basket");
+    const element = this.cloneElement("cart");
     const cart = new CartView(element, this.events);
 
     const cards = products.map((product, index) =>
@@ -146,22 +122,34 @@ export class ViewFactory {
     modal.open();
   }
 
-  createOrderForm(payment?: string, address?: string): void {
+  createOrderForm(
+    isValid: boolean,
+    errors: string[],
+    payment?: string,
+    address?: string,
+  ): void {
     const element = this.cloneElement("order");
     const orderForm = new OrderFormView(element, this.events);
     if (payment) orderForm.payment = payment;
     if (address) orderForm.address = address;
-
+    orderForm.setValidState(isValid);
+    orderForm.setValidationErrors(errors);
     const modal = this.getModal();
     modal.content = orderForm.render();
   }
 
-  createContactsForm(email?: string, phone?: string): void {
+  createContactsForm(
+    isValid: boolean,
+    errors: string[],
+    email?: string,
+    phone?: string,
+  ): void {
     const element = this.cloneElement("contacts");
     const contactsForm = new ContactsFormView(element, this.events);
     if (email) contactsForm.email = email;
     if (phone) contactsForm.phone = phone;
-
+    contactsForm.setValidState(isValid);
+    contactsForm.setValidationErrors(errors);
     const modal = this.getModal();
     modal.content = contactsForm.render();
   }
@@ -173,5 +161,19 @@ export class ViewFactory {
 
     const modal = this.getModal();
     modal.content = successModal.render();
+  }
+
+  private getTemplate(templateName: keyof IViewTemplates): HTMLTemplateElement {
+    return this.templates[templateName];
+  }
+
+  private cloneElement(templateName: keyof IViewTemplates): HTMLElement {
+    const template = this.getTemplate(templateName);
+    const content = template.content.cloneNode(true) as DocumentFragment;
+    const element = content.firstElementChild as HTMLElement;
+    if (!element) {
+      throw new Error(`Шаблон "${templateName}" не найден. `);
+    }
+    return element;
   }
 }

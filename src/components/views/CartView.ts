@@ -1,11 +1,7 @@
 import { Component } from "../base/Component";
 import { ensureElement } from "../../utils/utils";
 import { IEvents } from "../base/Events";
-
-export interface ICartView {
-  items: HTMLElement[];
-  total: number;
-}
+import { ICartView } from "../../types";
 
 export class CartView extends Component<ICartView> {
   protected listElement: HTMLElement;

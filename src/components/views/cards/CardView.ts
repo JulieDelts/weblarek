@@ -1,13 +1,8 @@
 import { Component } from "../../base/Component";
 import { ensureElement } from "../../../utils/utils";
+import { ICardView } from "../../../types";
 
-export interface ICardView {
-  id: string;
-  title: string;
-  price: number | null;
-}
-
-export class CardView extends Component<ICardView> {
+export abstract class CardView extends Component<ICardView> {
   protected titleElement: HTMLElement;
   protected priceElement: HTMLElement;
   private productPrice: number | null = null;

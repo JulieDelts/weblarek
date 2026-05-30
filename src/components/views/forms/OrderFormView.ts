@@ -1,11 +1,7 @@
 import { FormView } from "./FormView";
 import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
-
-export interface IOrderFormView {
-  payment: string;
-  address: string;
-}
+import { IOrderFormView } from "../../../types";
 
 export class OrderFormView extends FormView<IOrderFormView> {
   protected cardButtonElement: HTMLButtonElement;
@@ -31,10 +27,16 @@ export class OrderFormView extends FormView<IOrderFormView> {
 
     this.cardButtonElement.addEventListener("click", () => {
       this.payment = "card";
+      this.emitFormChange();
     });
 
     this.cashButtonElement.addEventListener("click", () => {
       this.payment = "cash";
+      this.emitFormChange();
+    });
+
+    this.addressInputElement.addEventListener("blur", () => {
+      this.emitFormChange();
     });
   }
 
@@ -48,18 +50,10 @@ export class OrderFormView extends FormView<IOrderFormView> {
       this.cashButtonElement.classList.add("button_alt-active");
       this.cardButtonElement.classList.remove("button_alt-active");
     }
-
-    this.validate();
   }
 
   set address(value: string) {
     this.addressInputElement.value = value;
-  }
-
-  protected handleSubmit(): void {
-    if (this.validate()) {
-      this.events.emit("order:next", this.getFormData());
-    }
   }
 
   getFormData(): IOrderFormView {
@@ -69,26 +63,10 @@ export class OrderFormView extends FormView<IOrderFormView> {
     };
   }
 
-  validate(): boolean {
-    const address = this.addressInputElement.value.trim();
-    const isValid = this.paymentElement !== "" && address !== "";
-
-    if (!this.paymentElement) {
-      this.errors = "Выберите способ оплаты";
-    } else if (!address) {
-      this.errors = "Введите адрес доставки";
-    } else {
-      this.errors = "";
-    }
-
-    this.valid = isValid;
-    return isValid;
+  protected emitFormChange(): void {
+    this.events.emit("order:form:change", this.getFormData());
   }
-
-  reset(): void {
-    super.reset();
-    this.paymentElement = "";
-    this.cardButtonElement.classList.remove("button_alt-active");
-    this.cashButtonElement.classList.remove("button_alt-active");
+  protected handleSubmit(): void {
+    this.events.emit("order:form:submit", this.getFormData());
   }
 }
