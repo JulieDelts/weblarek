@@ -163,6 +163,84 @@ Presenter - презентер содержит основную логику п
 `id: string` - уникальный идентификатор созданного заказа,
 `total: number` - итоговая сумма заказа.
 
+#### Интерфейс IViewTemplates
+
+Интерфейс для хранения шаблонов
+
+Поля интерфейса:
+`cardCatalog: HTMLTemplateElement`
+`cardPreview: HTMLTemplateElement`
+`cardBasket: HTMLTemplateElement`
+`cart: HTMLTemplateElement`
+`order: HTMLTemplateElement`
+`contacts: HTMLTemplateElement`
+`success: HTMLTemplateElement`
+
+#### ICardView
+
+Описывает базовую структуру данных для карточки товара
+
+Поля интерфейса:
+`id: string` - идентификатор товара
+`title: string`- название товара
+`price: number | null` - цена товара
+
+#### ICartCardView
+
+Расширяет ICardView, добавляя поле для карточки товара в корзине.
+
+Поля интерфейса:
+`index: number` - порядковый номер товара в корзине
+
+#### Интерфейс IFormView
+
+Интерфейс для хранения состояния формы
+
+`valid: boolean`
+`errors: string`
+
+#### Интерфейс IOrderFormView
+
+`payment: string`
+`address: string`
+
+#### IContactsFormView
+
+Описывает данные формы контактов.
+
+Поля интерфейса:
+email: string - введённый email
+phone: string - введённый номер телефона
+
+#### ICartView
+
+Описывает структуру данных для отображения корзины.
+
+Поля интерфейса:
+`items: HTMLElement[]` - массив DOM-элементов карточек товаров в корзине
+`total: number` - общая стоимость товаров в корзине
+
+#### IHeaderView
+
+Описывает структуру данных для отображения шапки сайта.
+
+Поля интерфейса:
+`counter: number` - количество товаров в корзине
+
+#### IModalView
+
+Описывает структуру данных для модального окна.
+
+Поля интерфейса:
+`content: HTMLElement` - содержимое модального окна
+
+#### ISuccessModalView
+
+Описывает структуру данных для модального окна успешного заказа.
+
+Поля интерфейса:
+`total: number` - списанная сумма заказа
+
 ### Модели данных
 
 #### Класс Customer
@@ -187,11 +265,17 @@ Presenter - презентер содержит основную логику п
 
 `clearData(): void` очищает все данные покупателя, устанавливая все поля равными "". У метода нет параметров и возвращаемого значения.
 
-`validateEmail(): { isValid: boolean; error?: string }` - закрытый метод, который проверяет корректность установленной электронной почты. Параметров у метода нет, проверяемая электронная почта, возвращаемым значением - объект с полями: `isValid: boolean`, результат валидации, и `error?: string`, сообщение об ошибке, если электронная почта отсутствует.
+`validateOrderData(): { isValid: boolean; errors: string[] }` валидирует способа оплаты и адреса
 
-`validatePhone(): { isValid: boolean; error?: string }` - закрытый метод, который проверяет корректность установленного номера телефона. Параметров у метода нет, возвращаемым значением - объект с полями: `isValid: boolean`, результат валидации, и `error?: string`, сообщение об ошибке, если номер отсутствует.
+`validateContactsData(): { isValid: boolean; errors: string[] }` валидирует email и телефона
 
-`validateAddress(): { isValid: boolean; error?: string }` - закрытый метод, который проверяет корректность установленного адреса доставки. Параметров у метода нет, возвращаемым значением - объект с полями: `isValid: boolean`, результат валидации, и `error?: string`, сообщение об ошибке, если адрес отсутствует.
+`validatePayment(): { isValid: boolean; error?: string }` проверяет, выбран ли способ оплаты
+
+`validateAddress(): { isValid: boolean; error?: string }` проверяет, заполнен ли адрес
+
+`validateEmail(): { isValid: boolean; error?: string }` проверяет, заполнен ли email
+
+`validatePhone(): { isValid: boolean; error?: string }` проверяет, заполнен ли телефон
 
 #### Класс Cart
 
@@ -200,22 +284,23 @@ Presenter - презентер содержит основную логику п
 Конструктор класса не принимает параметров.
 
 Поля класса:
-`products: IProduct[]` массив, который хранит товары IProduct.
+`products: IProduct[]` - приватный массив, который хранит добавленные товары IProduct.
+`events: IEvents` - приватное поле, хранит ссылку на брокер событий.
 
 Методы класса:
 `getAllProducts(): IProduct[]` возвращает массив со всеми товарами в корзине. Метод не принимает параметров. Возвращаемым значением является массив с товарами.
 
-`getAllProductsCount(): number` возвращает общее количество товаров в корзине. Метод не принимает параметров. Возвращаемым значением является целое число.
+`getAllProductsCount(): number` - возвращает общее количество товаров в корзине. Метод не принимает параметров. Возвращаемым значением является целое число.
 
-`getAllProductsCost(): number` возвращает стоимость всех товаров в корзине. Метод не принимает параметров. Возвращаемым значением является целое число.
+`getAllProductsCost(): number` - возвращает стоимость всех товаров в корзине. Метод не принимает параметров. Возвращаемым значением является целое число.
 
-`hasProduct(productId: string): boolean` проверяет наличие товара в корзине. Параметром метода является идентификатор товара (`id: string`). Возвращаемым значением является флаг наличия товара типа boolean;
+`hasProduct(productId: string): boolean` - проверяет наличие товара в корзине. Параметром метода является идентификатор товара (id: string). Возвращаемым значением является флаг наличия товара типа boolean.
 
-`addProduct(product: IProduct): void` добавляет товар в корзину. Параметром метода являются `product: IProduct`, добавляемый товар. Возвращаемого значения нет.
+`addProduct(product: IProduct): void` - добавляет товар в корзину. Параметром метода является product: IProduct, добавляемый товар. После добавления генерирует событие `cart:changed` с обновленными данными корзины.
 
-`removeProduct(product: IProduct): void` удаляет товар из корзины. Параметром метода является `product: IProduct`, удаляемый товар. Возвращаемого значения нет.
+`removeProduct(product: IProduct): void` - удаляет товар из корзины по его id. Если товар не найден, метод завершается. После удаления генерирует событие `cart:changed` с обновленными данными корзины.
 
-`clearCart(): void` очищает корзину, удаляя все товары. У метода нет параметров и возвращаемого значения.
+`clearCart(): void` - очищает корзину, удаляя все товары. Генерирует событие `cart:changed` с нулевыми значениями. У метода нет параметров и возвращаемого значения.
 
 #### Класс ProductCatalogue
 
@@ -223,20 +308,23 @@ Presenter - презентер содержит основную логику п
 
 Конструктор класса не принимает параметров.
 
+Конструктор класса `constructor(events: IEvents)` принимает брокер событий events для отправки уведомлений.
+
 Поля класса:
-`products	IProduct[]` - закрытое поле, которое хранит массив всех товаров в каталоге,
-`selectedProduct	IProduct | null` - закрытое поле, хранящее товар, выбранный для подробного отображения.
+`products IProduct[]` - закрытое поле, которое хранит массив всех товаров в каталоге,
+`selectedProduct IProduct | null` - закрытое поле, хранящее товар, выбранный для подробного отображения.
+`events: IEvents` - приватное поле, хранит ссылку на брокер событий.
 
 Методы класса:
-`addProducts(products: IProduct[]): void` добавляет новые товары в каталог. Параметром является массив товаров для добавления `products: IProduct[]`. Возвращаемого значения нет.
+`addProducts(products: IProduct[]): void` - добавляет новые товары в каталог. Параметром является массив товаров для добавления products: IProduct[]. Генерирует событие `catalogue:changed` с новым массивом товаров.
 
-`getAllProducts(): IProduct[]` возвращает массив всех товаров из каталога. Параметров нет. Возвращаемым значением является массив всех товаров в каталоге `IProduct[]`.
+`getAllProducts(): IProduct[]` - возвращает массив всех товаров из каталога. Параметров нет. Возвращаемым значением является массив всех товаров в каталоге IProduct[].
 
-`getProductById(id: string): IProduct | undefined` возвращает товар по его идентификатору `id: string`. Метод возвращает `IProduct`, найденный товар, если он был найден.
+`getProductById(id: string): IProduct | undefined` - возвращает товар по его идентификатору id: string. Метод возвращает IProduct, найденный товар, если он был найден, иначе undefined.
 
-`setSelectedProduct(product: IProduct): void` сохраняет товар для подробного отображения. Параметром является товар, который будет отображаться `product: IProduct`. Возвращаемого значения нет.
+`setSelectedProduct(product: IProduct): void` - сохраняет товар для подробного отображения. Параметром является товар, который будет отображаться product: IProduct. Возвращаемого значения нет.
 
-`getSelectedProduct(): IProduct | null` возвращает товар, выбранный для подробного отображения. У метода нет параметров, возвращаемым значением является `IProduct | null`, выбранный товар или null, если товар не был выбран для подробного отображения.
+`getSelectedProduct(): IProduct | null` - возвращает товар, выбранный для подробного отображения. У метода нет параметров, возвращаемым значением является IProduct | null, выбранный товар или null, если товар не был выбран для подробного отображения.
 
 ### Слой коммуникации
 
@@ -253,3 +341,305 @@ Presenter - презентер содержит основную логику п
 `getProductsAsync(): Promise<IProductsResponse>` получает список доступных товаров с сервера. У метода нет параметров. Возвращаемым значением является объект Promise, который разрешается в объект, реализующий интерфейс `IProductsResponse`.
 
 `postOrderAsync(orderData: IOrderSentRequest): Promise<IOrderSentResponse>` отправляет данные заказа на сервер. Параметром метода является объект, содержащий данные заказа `orderData: IOrderSentRequest`. Возвращаемым значением является объект Promise, который разрешается в объект, реализующий интерфейс `IOrderSentResponse`.
+
+### Слой представления
+
+#### Класс ViewFactory
+
+Фабрика для создания и управления представлениями приложения. Отвечает за инкапсуляцию логики создания View-компонентов из темплейтов, их размещение в модальных окнах или на странице, а также кеширование часто используемых представлений (модальное окно, каталог, шапка).
+
+Конструктор `constructor(events: IEvents, templates: IViewTemplates, galleryContainer: HTMLElement, modalContainer: HTMLElement, headerContainer: HTMLElement)` принимает брокер событий, объект с HTML-шаблонами и корневые DOM-элементы для галереи, модального окна и шапки.
+
+Поля класса:
+`events: IEvents` - приватное поле, хранит ссылку на брокер событий для передачи в создаваемые представления.
+`templates: IViewTemplates` - приватное поле, хранит объект с HTML-шаблонами, используемыми для клонирования и создания компонентов.
+`catalogue: ProductCatalogueView | null` - приватное поле для кеширования экземпляра представления каталога. Значение null до первого вызова getCatalogue().
+`modal: ModalView | null` - приватное поле для кеширования экземпляра модального окна. Значение null до первого вызова getModal().
+`header: HeaderView | null` - приватное поле для кеширования экземпляра шапки страницы. Значение null до первого вызова getHeader().
+`catalogueContainer: HTMLElement` - приватное поле, хранит DOM-элемент, в который будет рендериться каталог товаров.
+`modalContainer: HTMLElement` - приватное поле, хранит DOM-элемент, который является корневым контейнером для модального окна.
+`headerContainer: HTMLElement` - приватное поле, хранит DOM-элемент шапки страницы.
+
+Методы класса:
+`getCatalogue(): ProductCatalogueView` возвращает (или создает, если его нет) экземпляр представления каталога.
+
+`getModal(): ModalView` возвращает (или создает) экземпляр модального окна.
+
+`getHeader(): HeaderView` возвращает (или создает) экземпляр шапки страницы.
+
+`updateCatalogue(products: IProduct[]): void` обновляет содержимое каталога, создавая новые карточки CatalogueCardView для каждого переданного товара.
+
+`updateHeaderCounter(count: number): void` обновляет счетчик товаров в корзине в шапке.
+
+`createPreviewCard(product: IProduct, inBasket: boolean): void` создает карточку PreviewCardView для детального просмотра и открывает её в модальном окне.
+
+`createCatalogueCard(product: IProduct): HTMLElement` создает карточку каталога
+
+`createCartCard(product: IProduct, index: number): HTMLElement` создает карточку корзины
+
+`createCart(products: IProduct[], total: number): void` создает представление CartView со списком карточек CartCardView и открывает его в модальном окне.
+
+`createOrderForm(payment?: string, address?: string): void` создает форму OrderFormView для ввода адреса и способа оплаты и размещает её в модальном окне.
+
+`createContactsForm(email?: string, phone?: string): void` создает форму ContactsFormView для ввода email и телефона и размещает её в модальном окне.
+
+`createSuccessModal(total: number): void` создает представление SuccessModalView с итоговой суммой и открывает его в модальном окне.
+
+`getTemplate(templateName: keyof IViewTemplates): HTMLTemplateElement` получает HTML-шаблон.
+
+`cloneElement(templateName: keyof IViewTemplates): HTMLElement` клонирует элемент из шаблона.
+
+#### Абстрактный класс CardView
+
+Базовый класс для всех карточек товара. Отвечает за отображение общей для всех карточек информации.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-элемент и брокер событий.
+
+Поля класса:
+`titleElement: HTMLElement` - DOM-элемент для отображения названия товара
+`priceElement: HTMLElement` - DOM-элемент для отображения цены товара
+`productPrice: number | null` - приватное поле для хранения текущей `цены
+
+Методы :
+`set id(value: string)` и `get id(): string` записывает/считывает идентификатор товара в/из data-id атрибута контейнера.
+`set title(value: string)` устанавливает текст названия товара.
+`set price(value: number | null)` и `get price(): number | null` устанавливает текст цены товара ("Бесценно", если цена равна null) и запоминает значение.
+
+#### Класс CatalogueCardView
+
+Представление карточки товара для каталога. Расширяет CardView. Добавляет отображение изображения и категории товара, а также обработку клика для выбора товара.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-элемент и брокер событий.
+
+Поля класса:
+`imageElement: HTMLImageElement` - элемент изображения
+`categoryElement: HTMLElement` - элемент категории
+`events: IEvents` - брокер событий
+
+Методы:
+`set image(value: string)` устанавливает источник изображения, используя CDN_URL.
+`set category(value: string)` устанавливает текст категории и соответствующий CSS-класс из categoryMap.
+
+При клике на контейнер генерируется событие `card:select` с id товара.
+
+#### Класс PreviewCardView
+
+Представление карточки товара для детального просмотра в модальном окне. Расширяет CatalogueCardView. Добавляет описание и кнопку добавления/удаления товара из корзины.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-элемент и брокер событий.
+
+Поля класса:
+`descriptionElement: HTMLElement` - элемент описания
+`buttonElement: HTMLButtonElement` - элемент кнопки
+`inBasket: boolean` - флаг наличия товара в корзине
+
+Методы:
+`set description(value: string)` устанавливает текст описания товара.
+`set isProductInBasket(value: boolean)` устанавливает состояние кнопки, в зависимости от того, находится ли товар в корзине. Если true, кнопка меняет текст на "Удалить из корзины" и при клике генерирует событие `basket:remove`. Если false, текст становится "Купить" и генерируется `basket:add`. Кнопка блокируется, если цена товара null.
+
+#### Класс CartCardView
+
+Представление карточки товара внутри корзины. Расширяет CardView. Добавляет отображение порядкового номера и кнопку удаления.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-элемент и брокер событий.
+
+Поля класс:
+`indexElement: HTMLElement` - элемент порядкового номера
+`deleteButtonElement: HTMLButtonElement` - кнопка удаления
+`events: IEvents` - брокер событий
+
+Методы :
+`set index(value: number)` устанавливает порядковый номер товара в корзине.
+
+При клике на кнопку удаления генерируется событие `basket:remove` с id товара.
+
+#### Абстрактный класс FormView
+
+Базовый класс для всех форм в приложении. Управляет отображением ошибок и состоянием кнопки отправки.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер формы и брокер событий. Подписывается на события submit, input, change для запуска механизма валидации.
+
+Поля класса:
+`errorsElement: HTMLElement` - элемент для ошибок
+`submitButtonElement: HTMLButtonElement` - кнопка отправки
+`events: IEvents` - брокер событий
+
+Абстрактные методы:
+`handleSubmit(): void` должен быть реализован для обработки отправки формы.
+`getFormData(): T` должен быть реализован для возврата объекта с данными формы.
+
+Методы:
+`set valid(value: boolean)` делает кнопку отправки активной/неактивной.
+`set errors(value: string)` отображает текст ошибки.
+`setValidState(isValid: boolean): void` устанавливает состояние кнопки.
+`setValidationErrors(errors: string[]): void` отображает ошибки.
+
+#### Класс OrderFormView
+
+Форма для выбора способа оплаты и ввода адреса доставки.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер и брокер событий.
+
+Поля класса:
+`cardButtonElement: HTMLButtonElement` - кнопка "Онлайн"
+`cashButtonElement: HTMLButtonElement` - кнопка "При получении"
+`addressInputElement: HTMLInputElement` - поле ввода адреса
+`paymentElement: string` - выбранный способ оплаты
+
+Методы:
+`set payment(value: string)` устанавливает визуально активную кнопку способа оплаты ("card" или "cash").
+`set address(value: string)` устанавливает значение в поле ввода адреса.
+
+Реализация `handleSubmit`: при успешной валидации генерирует событие `order:next` с данными формы.
+Реализация `getFormData`: возвращает объект с полями payment и address.
+Реализация `validate`: проверяет, заполнены ли поля способа оплаты и адреса.
+
+#### Класс ContactsFormView
+
+Форма для ввода email и телефона пользователя.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер и брокер событий.
+
+Поля класса:
+`emailInputElement: HTMLInputElement`- поле для электронной почты
+`phoneInputElement: HTMLInputElement`- поле для телефона
+
+Методы:
+`set email(value: string)` устанавливает значение в поле ввода email.
+`set phone(value: string)` устанавливает значение в поле ввода телефона.
+
+Реализация `handleSubmit`: при успешной валидации генерирует событие `contacts:submit` с данными формы.
+Реализация `getFormData`: возвращает объект с полями email и phone.
+Реализация `validate`: проверяет, заполнены ли оба поля.
+
+#### Класс CartView
+
+Представление корзины с товарами. Отображает список товаров, итоговую сумму и кнопку начала оформления заказа.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер и брокер событий.
+
+Поля класса:
+`listElement: HTMLElement` - список товаров
+`totalElement: HTMLElement` - общая стоимость
+`buttonElement: HTMLButtonElement` - кнопка оформления
+`events: IEvents` - брокер событий
+
+Методы:
+`set items(items: HTMLElement[])` заполняет список товарами. Если список пуст, отображает сообщение "Корзина пуста" и блокирует кнопку оформления.
+`set total(value: number)` отображает итоговую стоимость товаров.
+
+При клике на кнопку оформления генерируется событие `order:start`.
+
+#### Класс HeaderView
+
+Представление шапки сайта. Отображает счетчик товаров в корзине и обрабатывает клик по кнопке корзины.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер и брокер событий.
+
+Поля класса:
+`counterElement: HTMLElement` - элемент счётчика
+`basketButtonElement: HTMLButtonElement` - кнопка корзины
+`events: IEvents` - брокер событий
+
+Методы:
+`set counter(value: number)` обновляет текст счетчика.
+
+При клике на кнопку корзины генерируется событие `basket:open`.
+
+#### Класс ModalView
+
+Представление модального окна. Управляет отображением контента в модальном окне, его открытием и закрытием.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер и брокер событий.
+
+Поля класса:
+`closeButtonElement: HTMLButtonElement` - кнопка закрытия
+`contentElement: HTMLElement` - контейнер содержимого
+`events: IEvents` - брокер событий
+
+Методы:
+`set content(value: HTMLElement)` заменяет содержимое модального окна.
+`isOpen(): boolean` проверяет, открыто ли модальное окно.
+`getContent(): HTMLElement` возвращает DOM-элемент, в который помещается контент.
+`open(): void` открывает модальное окно.
+`close(): void` закрывает модальное окно и очищает его содержимое.
+
+При клике на кнопку закрытия или оверлей генерируется событие `modal:close`.
+
+#### Класс ProductCatalogueView
+
+Представление каталога товаров.
+
+Поля класса:
+`catalogueElement: HTMLElement` (protected) - контейнер каталога
+
+Методы:
+`set catalog(items: HTMLElement[])` заменяет содержимое каталога на новый массив элементов карточек.
+
+#### Класс SuccessModalView
+
+Представление модального окна успешного оформления заказа.
+
+Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-контейнер и брокер событий.
+
+Поля:
+`descriptionElement: HTMLElement` - элемент описания
+`closeButtonElement: HTMLButtonElement` - кнопка закрытия
+`events: IEvents` - брокер событий
+
+Методы (сеттеры):
+`set total(value: number)` отображает сообщение о списанной сумме.
+
+При клике на кнопку закрытия генерируется событие `modal:close`.
+
+### Слой Презентера
+
+#### Класс Presenter
+
+Связывает модели данных с фабрикой представлений через брокер событий. Инициализирует обработчики всех основных событий, определяющих бизнес-логику приложения.
+
+Конструктор:
+`constructor(events: IEvents, viewFactory: ViewFactory, productCatalogue: ProductCatalogue, cart: Cart, customer: Customer)` принимает все необходимые для работы компоненты и сразу инициализирует обработчики событий.
+
+Поля класса:
+`events: IEvents` - брокер событий
+`viewFactory: ViewFactory` - фабрика представлений
+`webApi: WebLarekApi` - API для запросов
+`productCatalogue: ProductCatalogue`- модель каталога
+`cart: Cart` - модель корзины
+`customer: Customer` - модель покупателя
+
+Методы:
+`loadCatalogue(products: IProduct[]): void`загружает каталог товаров
+
+`initEventHandlers(events: IEvents): void` регистрирует обработчики событий
+
+`handleCatalogueChanged(data: { products: IProduct[] }): void` обновляет галерею и счётчик
+
+`handleCartChanged(data: { items: IProduct[]; count: number; total: number }): void` обновляет счётчик и корзину
+
+`handleProductSelected(data: { id: string }): void` открывает карточку товара
+
+`handleProductAddedToCart(data: { id: string }): void` добавляет товар в корзину
+
+`handleProductRemovedFromCart(data: { id: string }): void` удаляет товар из корзины
+
+`handleCartOpened(): void` открывает корзину
+
+`handleOrderStart(): void` открывает форму заказа
+
+`handleOrderFormChange(data: IOrderFormView): void` обновляет модель и валидацию
+
+`handleOrderFormSubmit(data: IOrderFormView): void` переходит к форме контактов
+
+`handleContactsFormChange(data: IContactsFormView): void` обновляет модель и валидацию
+
+`handleContactsFormSubmit(data: IContactsFormView): void` отправляет заказ
+
+`handleModalClosed(): void` закрывает модальное окно
+
+`updateOrderForm(isValid: boolean, errors: string[]): void` обновляет состояние формы заказа
+
+`updateContactsForm(isValid: boolean, errors: string[]): void` обновляет состояние формы контактов
+
+`submitOrder(): Promise<void>` отправляет заказ на сервер

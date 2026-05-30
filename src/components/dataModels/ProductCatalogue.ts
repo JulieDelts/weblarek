@@ -1,11 +1,15 @@
 import { IProduct } from "../../types/index";
+import { IEvents } from "../base/Events";
 
 export class ProductCatalogue {
   private products: IProduct[] = [];
   private selectedProduct: IProduct | null = null;
 
+  constructor(private events: IEvents) {}
+
   addProducts(products: IProduct[]): void {
     this.products = products;
+    this.events.emit("catalogue:changed", { products: this.products });
   }
 
   getAllProducts(): IProduct[] {

@@ -1,160 +1,64 @@
 import "./scss/styles.scss";
-import { IProduct, IOrderSentRequest } from "./types/index.ts";
-import { Customer } from "./components/dataModels/Customer.ts";
-import { Cart } from "./components/dataModels/Cart.ts";
-import { ProductCatalogue } from "./components/dataModels/ProductCatalogue.ts";
-import { apiProducts } from "./utils/data";
-import { Api } from "./components/base/Api.ts";
-import { API_URL } from "./utils/constants.ts";
-import { WebLarekApi } from "./components/dataSources/WebLarekApi.ts";
 
+import { EventEmitter } from "./components/base/Events";
+import { Cart } from "./components/dataModels/Cart";
+import { Customer } from "./components/dataModels/Customer";
+import { ProductCatalogue } from "./components/dataModels/ProductCatalogue";
+import { ViewFactory } from "./components/factories/ViewFactory";
+import { Presenter } from "./components/presenters/Presenter";
+import { Api } from "./components/base/Api";
+import { WebLarekApi } from "./components/dataSources/WebLarekApi";
+import { API_URL } from "./utils/constants";
+
+const events = new EventEmitter();
+
+const catalogueContainer = document.querySelector(".gallery") as HTMLElement;
+const modalContainer = document.getElementById(
+  "modal-container",
+) as HTMLElement;
+const headerContainer = document.querySelector(".header") as HTMLElement;
+
+if (!catalogueContainer) throw new Error("Контейнер для каталога не найден.");
+if (!modalContainer)
+  throw new Error("Контейнер для модального окна не найден.");
+if (!headerContainer) throw new Error("Контейнер для шапки не найден.");
+
+const templates = {
+  cardCatalog: document.getElementById("card-catalog") as HTMLTemplateElement,
+  cardPreview: document.getElementById("card-preview") as HTMLTemplateElement,
+  cardCart: document.getElementById("card-basket") as HTMLTemplateElement,
+  cart: document.getElementById("basket") as HTMLTemplateElement,
+  order: document.getElementById("order") as HTMLTemplateElement,
+  contacts: document.getElementById("contacts") as HTMLTemplateElement,
+  success: document.getElementById("success") as HTMLTemplateElement,
+};
+
+for (const [key, template] of Object.entries(templates)) {
+  if (!template) throw new Error(`Шаблон "${key}" не найден.`);
+}
+
+const productCatalogue = new ProductCatalogue(events);
+const cart = new Cart(events);
 const customer = new Customer();
-console.log("Тестирование Customer");
 
-console.log("Метод setPayment()");
-customer.setPayment("card");
-
-console.log("Метод setAddress()");
-customer.setAddress("ул. Набережная, д. 29");
-
-console.log("Метод setEmail()");
-customer.setEmail("test@yandex.ru");
-
-console.log("Метод setPhone()");
-customer.setPhone("+89163577897");
-
-console.log("Метод getData()");
-const data = customer.getData();
-console.log("Данные покупателя:", data);
-
-console.log("Метод validateEmail() с заполненной электронной почтой:");
-const emailValidation = customer.validateEmail();
-console.log("Результат валидации email:", emailValidation);
-
-console.log("Метод validatePhone() с заполненным телефоном:");
-const phoneValidation = customer.validatePhone();
-console.log("Результат валидации телефона:", phoneValidation);
-
-console.log("Метод validateAddress() с заполненным адресом:");
-const addressValidation = customer.validateAddress();
-console.log("Результат валидации адреса:", addressValidation);
-
-console.log("Метод clearData():");
-customer.clearData();
-const clearedData = customer.getData();
-console.log("Данные после очистки:", clearedData);
-
-console.log("Метод validateEmail() с пустой электронной почтой:");
-const emptyEmailValidation = customer.validateEmail();
-console.log("Результат валидации email:", emptyEmailValidation);
-
-console.log("Метод validatePhone() с пустым телефоном:");
-const emptyPhoneValidation = customer.validatePhone();
-console.log("Результат валидации телефона:", emptyPhoneValidation);
-
-console.log("Метод validateAddress() с пустым адресом:");
-const emptyAddressValidation = customer.validateAddress();
-console.log("Результат валидации адреса:", emptyAddressValidation);
-
-console.log("----------------------------------------------------------");
-
-const cart = new Cart();
-const testProducts: IProduct[] = apiProducts.items;
-console.log("Тестирование Cart");
-
-console.log("Метод addProduct()");
-cart.addProduct(testProducts[0]);
-cart.addProduct(testProducts[1]);
-
-console.log("Метод getAllProducts()");
-const allCartProducts = cart.getAllProducts();
-console.log("Товары в корзине:", allCartProducts);
-
-console.log("Метод getAllProductsCount()");
-const totalCount = cart.getAllProductsCount();
-console.log("Общее количество товаров:", totalCount);
-
-console.log("Метод getAllProductsCost()");
-const totalCost = cart.getAllProductsCost();
-console.log("Общая стоимость:", totalCost);
-
-console.log("Метод hasProduct()");
-const hasProduct = cart.hasProduct(testProducts[0].id);
-console.log(`Есть ли товар "${testProducts[0].title}":`, hasProduct);
-
-console.log("Метод removeProduct()");
-cart.removeProduct(testProducts[0]);
-
-const allCartProductsAfterRemoval = cart.getAllProducts();
-console.log(
-  "Товары в корзине после удаления одного из товаров:",
-  allCartProductsAfterRemoval,
+const viewFactory = new ViewFactory(
+  events,
+  templates,
+  catalogueContainer,
+  modalContainer,
+  headerContainer,
 );
-
-console.log("Метод clearCart()");
-cart.clearCart();
-const clearedCart = cart.getAllProducts();
-console.log("Корзина после очистки:", clearedCart);
-
-console.log("----------------------------------------------------------");
-
-const catalogue = new ProductCatalogue();
-console.log("Тестирование ProductCatalogue");
-
-console.log("Метод addProducts()");
-catalogue.addProducts([testProducts[0], testProducts[1]]);
-
-console.log("Метод getAllProducts()");
-const allCatalogueProducts = catalogue.getAllProducts();
-console.log("Все товары:", allCatalogueProducts);
-
-console.log("Метод getProductById()");
-const existingProduct = catalogue.getProductById(testProducts[0].id);
-console.log("Результат:", existingProduct);
-
-console.log("Метод setSelectedProduct()");
-catalogue.setSelectedProduct(testProducts[0]);
-console.log("Результат: выбран товар", testProducts[0].title);
-
-console.log("Метод getSelectedProduct()");
-const selectedProduct = catalogue.getSelectedProduct();
-console.log(
-  "Выбранный товар:",
-  selectedProduct
-    ? { id: selectedProduct.id, title: selectedProduct.title }
-    : null,
-);
-
-console.log("----------------------------------------------------------");
 
 const api = new Api(API_URL);
 const webLarekApi = new WebLarekApi(api);
-console.log("Тестирование WebLarekApi");
 
-console.log("Метод getProductsAsync()");
-try {
-  const products = await webLarekApi.getProductsAsync();
-  console.log("Полученные товары:", products);
-} catch (error: unknown) {
-  console.log(error);
-}
+const app = new Presenter(
+  events,
+  viewFactory,
+  webLarekApi,
+  productCatalogue,
+  cart,
+  customer,
+);
 
-console.log("Метод postOrderAsync(order)");
-const order: IOrderSentRequest = {
-  payment: "card",
-  email: "test@test.ru",
-  phone: "+71234567890",
-  address: "Spb Vosstania 1",
-  total: 2200,
-  items: [
-    "854cef69-976d-4c2a-a18c-2aa45046c390",
-    "c101ab44-ed99-4a54-990d-47aa2bb4e7d9",
-  ],
-};
-
-try {
-  const orderResult = await webLarekApi.postOrderAsync(order);
-  console.log("Результат создания заказа:", orderResult);
-} catch (error: unknown) {
-  console.log(error);
-}
+app.loadCatalogue();
