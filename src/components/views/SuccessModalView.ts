@@ -23,7 +23,7 @@ export class SuccessModalView extends Component<ISuccessModalView> {
     );
 
     this.closeButtonElement.addEventListener("click", () => {
-      events.emit("modal:close");
+      this.events.emit("success:done");
     });
   }
 

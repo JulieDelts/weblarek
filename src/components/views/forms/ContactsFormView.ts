@@ -3,7 +3,7 @@ import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
 import { IContactsFormView } from "../../../types";
 
-export class ContactsFormView extends FormView<IContactsFormView> {
+export class ContactsFormView extends FormView implements IContactsFormView {
   protected emailInputElement: HTMLInputElement;
   protected phoneInputElement: HTMLInputElement;
 
@@ -20,11 +20,11 @@ export class ContactsFormView extends FormView<IContactsFormView> {
     );
 
     this.emailInputElement.addEventListener("blur", () => {
-      this.emitFormChange();
+      this.emitEmailFormChange(this.emailInputElement.value);
     });
 
     this.phoneInputElement.addEventListener("blur", () => {
-      this.emitFormChange();
+      this.emitPhoneFormChange(this.phoneInputElement.value);
     });
   }
 
@@ -36,18 +36,15 @@ export class ContactsFormView extends FormView<IContactsFormView> {
     this.phoneInputElement.value = value;
   }
 
-  getFormData(): IContactsFormView {
-    return {
-      email: this.emailInputElement.value.trim(),
-      phone: this.phoneInputElement.value.trim(),
-    };
+  protected emitEmailFormChange(email: string): void {
+    this.events.emit("contacts:email:changed", email);
   }
 
-  protected emitFormChange(): void {
-    this.events.emit("contacts:form:change", this.getFormData());
+  protected emitPhoneFormChange(phone: string): void {
+    this.events.emit("contacts:phone:changed", phone);
   }
 
   protected handleSubmit(): void {
-    this.events.emit("contacts:form:submit", this.getFormData());
+    this.events.emit("contacts:form:submit");
   }
 }

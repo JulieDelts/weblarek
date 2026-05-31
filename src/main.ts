@@ -9,6 +9,16 @@ import { Presenter } from "./components/presenters/Presenter";
 import { Api } from "./components/base/Api";
 import { WebLarekApi } from "./components/dataSources/WebLarekApi";
 import { API_URL } from "./utils/constants";
+import { HeaderView } from "./components/views/HeaderView";
+import { ModalView } from "./components/views/ModalView";
+import { ProductCatalogueView } from "./components/views/ProductCatalogueView";
+import { CartView } from "./components/views/CartView";
+import { ContactsFormView } from "./components/views/forms/ContactsFormView";
+import { OrderFormView } from "./components/views/forms/OrderFormView";
+import { SuccessModalView } from "./components/views/SuccessModalView";
+import { CatalogueCardView } from "./components/views/cards/CatalogueCardView";
+import { CartCardView } from "./components/views/cards/CartCardView";
+import { PreviewCardView } from "./components/views/cards/PreviewCardView";
 
 const events = new EventEmitter();
 
@@ -39,7 +49,7 @@ for (const [key, template] of Object.entries(templates)) {
 
 const productCatalogue = new ProductCatalogue(events);
 const cart = new Cart(events);
-const customer = new Customer();
+const customer = new Customer(events);
 
 const viewFactory = new ViewFactory(
   events,
@@ -47,6 +57,18 @@ const viewFactory = new ViewFactory(
   catalogueContainer,
   modalContainer,
   headerContainer,
+  {
+    ProductCatalogueView,
+    ModalView,
+    HeaderView,
+    CartView,
+    OrderFormView,
+    ContactsFormView,
+    SuccessModalView,
+    CatalogueCardView,
+    CartCardView,
+    PreviewCardView,
+  },
 );
 
 const api = new Api(API_URL);

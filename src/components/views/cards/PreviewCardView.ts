@@ -22,11 +22,11 @@ export class PreviewCardView extends CatalogueCardView {
     this.buttonElement.addEventListener("click", (event) => {
       event.stopPropagation();
       if (this.inBasket) {
-        events.emit("basket:remove", { id: this.id });
+        events.emit("preview:remove", { id: this.id });
       } else {
-        events.emit("basket:add", { id: this.id });
+        events.emit("preview:add", { id: this.id });
       }
-      events.emit("modal:close");
+      events.emit("preview:done");
     });
   }
 

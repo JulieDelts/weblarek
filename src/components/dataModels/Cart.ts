@@ -1,7 +1,7 @@
-import { IProduct } from "../../types/index";
+import { ICartModel, IProduct } from "../../types/index";
 import { IEvents } from "../base/Events";
 
-export class Cart {
+export class Cart implements ICartModel {
   private products: IProduct[] = [];
 
   constructor(private events: IEvents) {}

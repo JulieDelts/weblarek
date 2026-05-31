@@ -265,10 +265,6 @@ phone: string - введённый номер телефона
 
 `clearData(): void` очищает все данные покупателя, устанавливая все поля равными "". У метода нет параметров и возвращаемого значения.
 
-`validateOrderData(): { isValid: boolean; errors: string[] }` валидирует способа оплаты и адреса
-
-`validateContactsData(): { isValid: boolean; errors: string[] }` валидирует email и телефона
-
 `validatePayment(): { isValid: boolean; error?: string }` проверяет, выбран ли способ оплаты
 
 `validateAddress(): { isValid: boolean; error?: string }` проверяет, заполнен ли адрес
@@ -635,6 +631,10 @@ phone: string - введённый номер телефона
 `handleContactsFormChange(data: IContactsFormView): void` обновляет модель и валидацию
 
 `handleContactsFormSubmit(data: IContactsFormView): void` отправляет заказ
+
+`validateOrderData(): { isValid: boolean; errors: string[] }` валидирует способы оплаты и адрес
+
+`validateContactsData(): { isValid: boolean; errors: string[] }` валидирует электронную почту и телефон
 
 `handleModalClosed(): void` закрывает модальное окно
 

@@ -1,23 +1,30 @@
-import { IProduct, IViewTemplates } from "../../types";
+import type {
+  IHeaderView,
+  IModalView,
+  IProduct,
+  IProductCatalogueView,
+  ICartView,
+  IOrderFormView,
+  IContactsFormView,
+  ISuccessModalView,
+  IViewConstructors,
+  IViewTemplates,
+  IViewFactory,
+} from "../../types";
 import { IEvents } from "../base/Events";
-import { CartCardView } from "../views/cards/CartCardView";
-import { CatalogueCardView } from "../views/cards/CatalogueCardView";
-import { PreviewCardView } from "../views/cards/PreviewCardView";
-import { CartView } from "../views/CartView";
-import { ContactsFormView } from "../views/forms/ContactsFormView";
-import { OrderFormView } from "../views/forms/OrderFormView";
-import { HeaderView } from "../views/HeaderView";
-import { ModalView } from "../views/ModalView";
-import { ProductCatalogueView } from "../views/ProductCatalogueView";
-import { SuccessModalView } from "../views/SuccessModalView";
 
-export class ViewFactory {
+export class ViewFactory implements IViewFactory {
   private events: IEvents;
   private templates: IViewTemplates;
 
-  private catalogue: ProductCatalogueView | null = null;
-  private modal: ModalView | null = null;
-  private header: HeaderView | null = null;
+  private catalogue: IProductCatalogueView | null = null;
+  private modal: IModalView | null = null;
+  private header: IHeaderView | null = null;
+  private cartView: ICartView | null = null;
+  private orderForm: IOrderFormView | null = null;
+  private contactsForm: IContactsFormView | null = null;
+  private successModalView: ISuccessModalView | null = null;
+  private viewConstructors: IViewConstructors;
 
   private catalogueContainer: HTMLElement;
   private modalContainer: HTMLElement;
@@ -29,39 +36,89 @@ export class ViewFactory {
     galleryContainer: HTMLElement,
     modalContainer: HTMLElement,
     headerContainer: HTMLElement,
+    viewConstructors: IViewConstructors,
   ) {
     this.events = events;
     this.templates = templates;
+    this.viewConstructors = viewConstructors;
     this.catalogueContainer = galleryContainer;
     this.modalContainer = modalContainer;
     this.headerContainer = headerContainer;
   }
 
-  getCatalogue(): ProductCatalogueView {
+  getCatalogue(): IProductCatalogueView {
     if (!this.catalogue) {
-      this.catalogue = new ProductCatalogueView(this.catalogueContainer);
+      this.catalogue = new this.viewConstructors.ProductCatalogueView(
+        this.catalogueContainer,
+      );
     }
     return this.catalogue;
   }
 
-  getModal(): ModalView {
+  getModal(): IModalView {
     if (!this.modal) {
-      this.modal = new ModalView(this.modalContainer, this.events);
+      this.modal = new this.viewConstructors.ModalView(
+        this.modalContainer,
+        this.events,
+      );
     }
     return this.modal;
   }
 
-  getHeader(): HeaderView {
+  getHeader(): IHeaderView {
     if (!this.header) {
-      this.header = new HeaderView(this.headerContainer, this.events);
+      this.header = new this.viewConstructors.HeaderView(
+        this.headerContainer,
+        this.events,
+      );
     }
     return this.header;
+  }
+
+  getCart(): ICartView {
+    if (!this.cartView) {
+      this.cartView = new this.viewConstructors.CartView(
+        this.cloneElement("cart"),
+        this.events,
+      );
+    }
+    return this.cartView;
+  }
+
+  getOrderFormView(): IOrderFormView {
+    if (!this.orderForm) {
+      this.orderForm = new this.viewConstructors.OrderFormView(
+        this.cloneElement("order"),
+        this.events,
+      );
+    }
+    return this.orderForm;
+  }
+
+  getContactsFormView(): IContactsFormView {
+    if (!this.contactsForm) {
+      this.contactsForm = new this.viewConstructors.ContactsFormView(
+        this.cloneElement("contacts"),
+        this.events,
+      );
+    }
+    return this.contactsForm;
+  }
+
+  getSuccessModalView(): ISuccessModalView {
+    if (!this.successModalView) {
+      this.successModalView = new this.viewConstructors.SuccessModalView(
+        this.cloneElement("success"),
+        this.events,
+      );
+    }
+    return this.successModalView;
   }
 
   updateCatalogue(products: IProduct[]): void {
     const catalogue = this.getCatalogue();
     const cards = products.map((product) => this.createCatalogueCard(product));
-    catalogue.catalog = cards;
+    catalogue.catalogue = cards;
   }
 
   updateHeaderCounter(count: number): void {
@@ -69,9 +126,21 @@ export class ViewFactory {
     header.counter = count;
   }
 
+  updateCart(products: IProduct[], total: number): void {
+    const cart = this.getCart();
+    const cards = products.map((product, index) =>
+      this.createCartCard(product, index + 1),
+    );
+    cart.items = cards;
+    cart.total = total;
+  }
+
   createCatalogueCard(product: IProduct): HTMLElement {
     const element = this.cloneElement("cardCatalog");
-    const card = new CatalogueCardView(element, this.events);
+    const card = new this.viewConstructors.CatalogueCardView(
+      element,
+      this.events,
+    );
     card.id = product.id;
     card.title = product.title;
     card.price = product.price ?? null;
@@ -82,7 +151,10 @@ export class ViewFactory {
 
   createCartCard(product: IProduct, index: number): HTMLElement {
     const element = this.cloneElement("cardCart");
-    const basketCard = new CartCardView(element, this.events);
+    const basketCard = new this.viewConstructors.CartCardView(
+      element,
+      this.events,
+    );
     basketCard.id = product.id;
     basketCard.title = product.title;
     basketCard.price = product.price ?? null;
@@ -92,7 +164,10 @@ export class ViewFactory {
 
   createPreviewCard(product: IProduct, inBasket: boolean): void {
     const element = this.cloneElement("cardPreview");
-    const previewCard = new PreviewCardView(element, this.events);
+    const previewCard = new this.viewConstructors.PreviewCardView(
+      element,
+      this.events,
+    );
     previewCard.id = product.id;
     previewCard.title = product.title;
     previewCard.price = product.price ?? null;
@@ -100,65 +175,37 @@ export class ViewFactory {
     previewCard.category = product.category;
     previewCard.description = product.description;
     previewCard.isProductInBasket = inBasket;
-
     const modal = this.getModal();
     modal.content = previewCard.render();
     modal.open();
   }
 
   createCart(products: IProduct[], total: number): void {
-    const element = this.cloneElement("cart");
-    const cart = new CartView(element, this.events);
-
-    const cards = products.map((product, index) =>
-      this.createCartCard(product, index + 1),
-    );
-
-    cart.items = cards;
-    cart.total = total;
-
+    this.updateCart(products, total);
     const modal = this.getModal();
-    modal.content = cart.render();
+    modal.content = this.getCart().render();
     modal.open();
   }
 
-  createOrderForm(
-    isValid: boolean,
-    errors: string[],
-    payment?: string,
-    address?: string,
-  ): void {
-    const element = this.cloneElement("order");
-    const orderForm = new OrderFormView(element, this.events);
-    if (payment) orderForm.payment = payment;
-    if (address) orderForm.address = address;
-    orderForm.setValidState(isValid);
-    orderForm.setValidationErrors(errors);
+  createOrderForm(): void {
+    const orderForm = this.getOrderFormView();
+    orderForm.setValidState(false);
     const modal = this.getModal();
     modal.content = orderForm.render();
+    modal.open();
   }
 
-  createContactsForm(
-    isValid: boolean,
-    errors: string[],
-    email?: string,
-    phone?: string,
-  ): void {
-    const element = this.cloneElement("contacts");
-    const contactsForm = new ContactsFormView(element, this.events);
-    if (email) contactsForm.email = email;
-    if (phone) contactsForm.phone = phone;
-    contactsForm.setValidState(isValid);
-    contactsForm.setValidationErrors(errors);
+  createContactsForm(): void {
+    const contactsForm = this.getContactsFormView();
+    contactsForm.setValidState(false);
     const modal = this.getModal();
     modal.content = contactsForm.render();
+    modal.open();
   }
 
   createSuccessModal(total: number): void {
-    const element = this.cloneElement("success");
-    const successModal = new SuccessModalView(element, this.events);
+    const successModal = this.getSuccessModalView();
     successModal.total = total;
-
     const modal = this.getModal();
     modal.content = successModal.render();
   }

@@ -23,12 +23,12 @@ export class ModalView extends Component<IModalView> {
     );
 
     this.closeButtonElement.addEventListener("click", () => {
-      events.emit("modal:close");
+      this.close();
     });
 
     this.container.addEventListener("click", (event) => {
       if (event.target === this.container) {
-        events.emit("modal:close");
+        this.close();
       }
     });
   }
