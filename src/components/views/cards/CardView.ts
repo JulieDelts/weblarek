@@ -19,14 +19,6 @@ export abstract class CardView extends Component<ICardView> {
     );
   }
 
-  set id(_value: string) {
-    // no-op: view does not store model identifiers
-  }
-
-  get id(): string {
-    return "";
-  }
-
   set title(value: string) {
     this.titleElement.textContent = value;
   }
@@ -37,9 +29,5 @@ export abstract class CardView extends Component<ICardView> {
     } else {
       this.priceElement.textContent = `${value} синапсов`;
     }
-  }
-
-  get price(): number | null {
-    return null;
   }
 }
