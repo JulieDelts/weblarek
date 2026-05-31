@@ -1,4 +1,4 @@
-import { IApi } from "../../types";
+import { IApi, IWebLarekApi } from "../../types";
 import {
   IOrderSentRequest,
   IOrderSentResponse,
@@ -6,7 +6,7 @@ import {
 } from "../../types";
 import { settings } from "../../utils/constants";
 
-export class WebLarekApi {
+export class WebLarekApi implements IWebLarekApi {
   private api: IApi;
 
   constructor(api: IApi) {

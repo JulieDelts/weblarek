@@ -9,7 +9,7 @@ export class ProductCatalogueView extends Component<IProductCatalogueView> {
     this.catalogueElement = container;
   }
 
-  set catalog(items: HTMLElement[]) {
+  set catalogue(items: HTMLElement[]) {
     this.catalogueElement.innerHTML = "";
     items.forEach((item) => {
       this.catalogueElement.appendChild(item);

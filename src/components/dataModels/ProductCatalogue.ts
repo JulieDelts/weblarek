@@ -1,7 +1,7 @@
-import { IProduct } from "../../types/index";
+import { IProduct, IProductCatalogueModel } from "../../types/index";
 import { IEvents } from "../base/Events";
 
-export class ProductCatalogue {
+export class ProductCatalogue implements IProductCatalogueModel {
   private products: IProduct[] = [];
   private selectedProduct: IProduct | null = null;
 

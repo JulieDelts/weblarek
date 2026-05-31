@@ -1,6 +1,7 @@
-import { ICustomer, PaymentMethod } from "../../types/index";
+import { ICustomer, ICustomerModel, PaymentMethod } from "../../types/index";
+import { IEvents } from "../base/Events";
 
-export class Customer {
+export class Customer implements ICustomerModel {
   private customer: ICustomer = {
     payment: "",
     address: "",
@@ -8,7 +9,7 @@ export class Customer {
     phone: "",
   };
 
-  constructor() {}
+  constructor(private events: IEvents) {}
 
   getData(): ICustomer {
     return this.customer;
@@ -16,18 +17,22 @@ export class Customer {
 
   setPayment(payment: PaymentMethod): void {
     this.customer.payment = payment;
+    this.events.emit("customer:payment-changed", payment);
   }
 
   setAddress(address: string): void {
     this.customer.address = address;
+    this.events.emit("customer:address-changed", address);
   }
 
   setEmail(email: string): void {
     this.customer.email = email;
+    this.events.emit("customer:email-changed", email);
   }
 
   setPhone(phone: string): void {
     this.customer.phone = phone;
+    this.events.emit("customer:phone-changed", phone);
   }
 
   clearData(): void {
@@ -39,55 +44,32 @@ export class Customer {
     };
   }
 
-  validateOrderData(): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    const paymentValidation = this.validatePayment();
-    if (!paymentValidation.isValid) errors.push(paymentValidation.error!);
-
-    const addressValidation = this.validateAddress();
-    if (!addressValidation.isValid) errors.push(addressValidation.error!);
-
-    const result = { isValid: errors.length === 0, errors };
-    return result;
-  }
-
-  validateContactsData(): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    const emailValidation = this.validateEmail();
-    if (!emailValidation.isValid) errors.push(emailValidation.error!);
-
-    const phoneValidation = this.validatePhone();
-    if (!phoneValidation.isValid) errors.push(phoneValidation.error!);
-
-    const result = { isValid: errors.length === 0, errors };
-    return result;
-  }
-
-  private validatePayment(): { isValid: boolean; error?: string } {
-    if (!this.customer.payment) {
+  validatePayment(payment?: PaymentMethod): {
+    isValid: boolean;
+    error?: string;
+  } {
+    if (!payment) {
       return { isValid: false, error: "Не указан способ оплаты" };
     }
     return { isValid: true };
   }
 
-  private validateAddress(): { isValid: boolean; error?: string } {
-    if (!this.customer.address) {
+  validateAddress(address?: string): { isValid: boolean; error?: string } {
+    if (!address || address.trim() === "") {
       return { isValid: false, error: "Не указан адрес доставки" };
     }
     return { isValid: true };
   }
 
-  private validateEmail(): { isValid: boolean; error?: string } {
-    if (!this.customer.email) {
+  validateEmail(email?: string): { isValid: boolean; error?: string } {
+    if (!email || email.trim() === "") {
       return { isValid: false, error: "Не указана электронная почта" };
     }
     return { isValid: true };
   }
 
-  private validatePhone(): { isValid: boolean; error?: string } {
-    if (!this.customer.phone) {
+  validatePhone(phone?: string): { isValid: boolean; error?: string } {
+    if (!phone || phone.trim() === "") {
       return { isValid: false, error: "Не указан телефон" };
     }
     return { isValid: true };

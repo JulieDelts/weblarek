@@ -3,11 +3,10 @@ import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
 import { IOrderFormView } from "../../../types";
 
-export class OrderFormView extends FormView<IOrderFormView> {
+export class OrderFormView extends FormView implements IOrderFormView {
   protected cardButtonElement: HTMLButtonElement;
   protected cashButtonElement: HTMLButtonElement;
   protected addressInputElement: HTMLInputElement;
-  protected paymentElement: string = "";
 
   constructor(container: HTMLElement, events: IEvents) {
     super(container, events);
@@ -26,23 +25,19 @@ export class OrderFormView extends FormView<IOrderFormView> {
     );
 
     this.cardButtonElement.addEventListener("click", () => {
-      this.payment = "card";
-      this.emitFormChange();
+      this.emitPaymentFormChange("card");
     });
 
     this.cashButtonElement.addEventListener("click", () => {
-      this.payment = "cash";
-      this.emitFormChange();
+      this.emitPaymentFormChange("cash");
     });
 
     this.addressInputElement.addEventListener("blur", () => {
-      this.emitFormChange();
+      this.emitAddressFormChange(this.addressInputElement.value);
     });
   }
 
   set payment(value: string) {
-    this.paymentElement = value;
-
     if (value === "card") {
       this.cardButtonElement.classList.add("button_alt-active");
       this.cashButtonElement.classList.remove("button_alt-active");
@@ -56,17 +51,15 @@ export class OrderFormView extends FormView<IOrderFormView> {
     this.addressInputElement.value = value;
   }
 
-  getFormData(): IOrderFormView {
-    return {
-      payment: this.paymentElement,
-      address: this.addressInputElement.value.trim(),
-    };
+  protected emitPaymentFormChange(payment: string): void {
+    this.events.emit("order:payment:changed", payment);
   }
 
-  protected emitFormChange(): void {
-    this.events.emit("order:form:change", this.getFormData());
+  protected emitAddressFormChange(address: string): void {
+    this.events.emit("order:address:changed", address);
   }
+
   protected handleSubmit(): void {
-    this.events.emit("order:form:submit", this.getFormData());
+    this.events.emit("order:form:submit");
   }
 }

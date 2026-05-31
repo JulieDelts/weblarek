@@ -1,6 +1,5 @@
 import { CardView } from "./CardView";
 import { ensureElement } from "../../../utils/utils";
-import { IEvents } from "../../base/Events";
 import { categoryMap, CDN_URL } from "../../../utils/constants";
 
 type CategoryKey = keyof typeof categoryMap;
@@ -8,9 +7,10 @@ type CategoryKey = keyof typeof categoryMap;
 export class CatalogueCardView extends CardView {
   protected imageElement: HTMLImageElement;
   protected categoryElement: HTMLElement;
+
   constructor(
     container: HTMLElement,
-    protected events: IEvents,
+    protected onSelect: () => void = () => {},
   ) {
     super(container);
 
@@ -25,7 +25,7 @@ export class CatalogueCardView extends CardView {
 
     if (this.container.classList.contains("gallery__item")) {
       this.container.addEventListener("click", () => {
-        events.emit("card:select", { id: this.id });
+        this.onSelect();
       });
     }
   }

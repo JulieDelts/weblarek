@@ -1,9 +1,12 @@
 import { Component } from "../../base/Component";
 import { ensureElement } from "../../../utils/utils";
 import { IEvents } from "../../base/Events";
-import { IFormView } from "../../../types";
+import { IFormView, IFormViewData } from "../../../types";
 
-export abstract class FormView<T> extends Component<IFormView> {
+export abstract class FormView
+  extends Component<IFormViewData>
+  implements IFormView
+{
   protected errorsElement: HTMLElement;
   protected submitButtonElement: HTMLButtonElement;
 
@@ -28,7 +31,6 @@ export abstract class FormView<T> extends Component<IFormView> {
     });
   }
 
-  protected abstract getFormData(): T;
   protected abstract handleSubmit(): void;
 
   set valid(value: boolean) {
@@ -43,7 +45,7 @@ export abstract class FormView<T> extends Component<IFormView> {
     this.valid = isValid;
   }
 
-  setValidationErrors(errors: string[]): void {
-    this.errors = errors.join("; ");
+  setValidationError(error: string): void {
+    this.errors = error;
   }
 }

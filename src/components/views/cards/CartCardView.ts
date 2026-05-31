@@ -1,6 +1,5 @@
 import { CardView } from "./CardView";
 import { ensureElement } from "../../../utils/utils";
-import { IEvents } from "../../base/Events";
 
 export class CartCardView extends CardView {
   protected indexElement: HTMLElement;
@@ -8,7 +7,7 @@ export class CartCardView extends CardView {
 
   constructor(
     container: HTMLElement,
-    protected events: IEvents,
+    protected onDelete: () => void,
   ) {
     super(container);
 
@@ -23,7 +22,7 @@ export class CartCardView extends CardView {
 
     this.deleteButtonElement.addEventListener("click", (event) => {
       event.stopPropagation();
-      events.emit("basket:remove", { id: this.id });
+      this.onDelete();
     });
   }
 
