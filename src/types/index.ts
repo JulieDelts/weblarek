@@ -157,13 +157,19 @@ export interface IViewConstructors {
   CartView: IViewConstructor<ICartView, [HTMLElement, IEvents]>;
   OrderFormView: IViewConstructor<IOrderFormView, [HTMLElement, IEvents]>;
   ContactsFormView: IViewConstructor<IContactsFormView, [HTMLElement, IEvents]>;
-  SuccessModalView: IViewConstructor<ISuccessModalView, [HTMLElement, IEvents]>;
+  SuccessModalView: IViewConstructor<
+    ISuccessModalView,
+    [HTMLElement, IEvents, () => void]
+  >;
   CatalogueCardView: IViewConstructor<
     ICatalogueCardView,
-    [HTMLElement, IEvents]
+    [HTMLElement, () => void]
   >;
-  CartCardView: IViewConstructor<ICartCardView, [HTMLElement, IEvents]>;
-  PreviewCardView: IViewConstructor<IPreviewCardView, [HTMLElement, IEvents]>;
+  CartCardView: IViewConstructor<ICartCardView, [HTMLElement, () => void]>;
+  PreviewCardView: IViewConstructor<
+    IPreviewCardView,
+    [HTMLElement, () => void, () => void]
+  >;
 }
 
 export interface IViewConstructor<T, A extends any[] = any[]> {

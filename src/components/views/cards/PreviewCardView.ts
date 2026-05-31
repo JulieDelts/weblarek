@@ -1,15 +1,20 @@
 import { CatalogueCardView } from "./CatalogueCardView";
 import { ensureElement } from "../../../utils/utils";
-import { IEvents } from "../../base/Events";
 
 export class PreviewCardView extends CatalogueCardView {
   protected descriptionElement: HTMLElement;
   protected buttonElement: HTMLButtonElement;
-  protected inBasket: boolean = false;
+  protected onPreviewAction: () => void;
+  protected closeModal: () => void;
 
-  constructor(container: HTMLElement, events: IEvents) {
-    super(container, events);
-
+  constructor(
+    container: HTMLElement,
+    onPreviewAction: () => void,
+    closeModal: () => void,
+  ) {
+    super(container, () => {});
+    this.onPreviewAction = onPreviewAction;
+    this.closeModal = closeModal;
     this.descriptionElement = ensureElement<HTMLElement>(
       ".card__text",
       this.container,
@@ -21,12 +26,8 @@ export class PreviewCardView extends CatalogueCardView {
 
     this.buttonElement.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (this.inBasket) {
-        events.emit("preview:remove", { id: this.id });
-      } else {
-        events.emit("preview:add", { id: this.id });
-      }
-      events.emit("preview:done");
+      this.onPreviewAction();
+      this.closeModal();
     });
   }
 
@@ -36,31 +37,34 @@ export class PreviewCardView extends CatalogueCardView {
 
   set price(value: number | null) {
     super.price = value;
-    this.updateButtonState();
-  }
-
-  set isProductInBasket(value: boolean) {
-    this.inBasket = value;
-    this.updateButtonState();
-  }
-
-  get isProductInBasket(): boolean {
-    return this.inBasket;
-  }
-
-  protected updateButtonState(): void {
-    if (super.price === null) {
+    if (value === null) {
       this.buttonElement.disabled = true;
       this.buttonElement.textContent = "Недоступно";
       return;
     }
 
     this.buttonElement.disabled = false;
+    this.updateButtonText(
+      value,
+      this.buttonElement.textContent === "Удалить из корзины",
+    );
+  }
 
-    if (this.isProductInBasket) {
-      this.buttonElement.textContent = "Удалить из корзины";
-    } else {
-      this.buttonElement.textContent = "Купить";
+  set isProductInBasket(value: boolean) {
+    if (!this.buttonElement.disabled) {
+      this.updateButtonText(null, value);
     }
+  }
+
+  protected updateButtonText(
+    value: number | null = null,
+    inBasket: boolean,
+  ): void {
+    if (value === null && this.buttonElement.disabled) {
+      this.buttonElement.textContent = "Недоступно";
+      return;
+    }
+
+    this.buttonElement.textContent = inBasket ? "Удалить из корзины" : "Купить";
   }
 }

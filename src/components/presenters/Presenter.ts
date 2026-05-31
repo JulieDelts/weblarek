@@ -35,12 +35,10 @@ export class Presenter {
     events.on("catalogue:changed", this.handleCatalogueChanged.bind(this));
     events.on("cart:changed", this.handleCartChanged.bind(this));
     events.on("card:select", this.handleProductSelected.bind(this));
-    events.on("basket:add", this.handleProductAddedToCart.bind(this));
     events.on("basket:remove", this.handleProductRemovedFromCart.bind(this));
     events.on("basket:open", this.handleCartOpened.bind(this));
+    events.on("preview:toggle", this.handlePreviewToggle.bind(this));
     events.on("order:start", this.handleOrderStart.bind(this));
-    events.on("review:done", this.modalClose.bind(this));
-    events.on("success:done", this.modalClose.bind(this));
     events.on(
       "order:payment:changed",
       this.handleOrderPaymentChanged.bind(this),
@@ -66,11 +64,6 @@ export class Presenter {
     this.viewFactory.updateHeaderCounter(this.cart.getAllProductsCount());
   }
 
-  private modalClose(): void {
-    const modal = this.viewFactory.getModal();
-    modal.close();
-  }
-
   private handleCartChanged(data: {
     items: IProduct[];
     count: number;
@@ -85,23 +78,27 @@ export class Presenter {
   private handleProductSelected(data: { id: string }): void {
     const product = this.productCatalogue.getProductById(data.id);
     if (!product) return;
+    this.productCatalogue.setSelectedProduct(product);
     this.viewFactory.createPreviewCard(
       product,
       this.cart.hasProduct(product.id),
     );
   }
 
-  private handleProductAddedToCart(data: { id: string }): void {
-    const product = this.productCatalogue.getProductById(data.id);
-    if (product && !this.cart.hasProduct(product.id)) {
-      this.cart.addProduct(product);
-    }
-  }
-
   private handleProductRemovedFromCart(data: { id: string }): void {
     const product = this.productCatalogue.getProductById(data.id);
     if (product) {
       this.cart.removeProduct(product);
+    }
+  }
+
+  private handlePreviewToggle(): void {
+    const product = this.productCatalogue.getSelectedProduct();
+    if (!product) return;
+    if (this.cart.hasProduct(product.id)) {
+      this.cart.removeProduct(product);
+    } else {
+      this.cart.addProduct(product);
     }
   }
 

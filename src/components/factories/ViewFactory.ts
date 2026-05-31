@@ -110,6 +110,7 @@ export class ViewFactory implements IViewFactory {
       this.successModalView = new this.viewConstructors.SuccessModalView(
         this.cloneElement("success"),
         this.events,
+        () => this.getModal().close(),
       );
     }
     return this.successModalView;
@@ -137,11 +138,9 @@ export class ViewFactory implements IViewFactory {
 
   createCatalogueCard(product: IProduct): HTMLElement {
     const element = this.cloneElement("cardCatalog");
-    const card = new this.viewConstructors.CatalogueCardView(
-      element,
-      this.events,
+    const card = new this.viewConstructors.CatalogueCardView(element, () =>
+      this.events.emit("card:select", { id: product.id }),
     );
-    card.id = product.id;
     card.title = product.title;
     card.price = product.price ?? null;
     card.image = product.image;
@@ -151,11 +150,9 @@ export class ViewFactory implements IViewFactory {
 
   createCartCard(product: IProduct, index: number): HTMLElement {
     const element = this.cloneElement("cardCart");
-    const basketCard = new this.viewConstructors.CartCardView(
-      element,
-      this.events,
+    const basketCard = new this.viewConstructors.CartCardView(element, () =>
+      this.events.emit("basket:remove", { id: product.id }),
     );
-    basketCard.id = product.id;
     basketCard.title = product.title;
     basketCard.price = product.price ?? null;
     basketCard.index = index;
@@ -164,18 +161,18 @@ export class ViewFactory implements IViewFactory {
 
   createPreviewCard(product: IProduct, inBasket: boolean): void {
     const element = this.cloneElement("cardPreview");
+    const modal = this.getModal();
     const previewCard = new this.viewConstructors.PreviewCardView(
       element,
-      this.events,
+      () => this.events.emit("preview:toggle"),
+      () => modal.close(),
     );
-    previewCard.id = product.id;
     previewCard.title = product.title;
     previewCard.price = product.price ?? null;
     previewCard.image = product.image;
     previewCard.category = product.category;
     previewCard.description = product.description;
     previewCard.isProductInBasket = inBasket;
-    const modal = this.getModal();
     modal.content = previewCard.render();
     modal.open();
   }
@@ -204,10 +201,11 @@ export class ViewFactory implements IViewFactory {
   }
 
   createSuccessModal(total: number): void {
+    const modal = this.getModal();
     const successModal = this.getSuccessModalView();
     successModal.total = total;
-    const modal = this.getModal();
     modal.content = successModal.render();
+    modal.open();
   }
 
   private getTemplate(templateName: keyof IViewTemplates): HTMLTemplateElement {

@@ -6,13 +6,15 @@ import { ISuccessModalView } from "../../types";
 export class SuccessModalView extends Component<ISuccessModalView> {
   protected descriptionElement: HTMLElement;
   protected closeButtonElement: HTMLButtonElement;
+  protected closeModal: () => void;
 
   constructor(
     container: HTMLElement,
     protected events: IEvents,
+    closeModal: () => void,
   ) {
     super(container);
-
+    this.closeModal = closeModal;
     this.descriptionElement = ensureElement<HTMLElement>(
       ".order-success__description",
       this.container,
@@ -23,7 +25,7 @@ export class SuccessModalView extends Component<ISuccessModalView> {
     );
 
     this.closeButtonElement.addEventListener("click", () => {
-      this.events.emit("success:done");
+      this.closeModal();
     });
   }
 

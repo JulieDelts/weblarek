@@ -5,7 +5,6 @@ import { ICardView } from "../../../types";
 export abstract class CardView extends Component<ICardView> {
   protected titleElement: HTMLElement;
   protected priceElement: HTMLElement;
-  private productPrice: number | null = null;
 
   constructor(container: HTMLElement) {
     super(container);
@@ -20,12 +19,12 @@ export abstract class CardView extends Component<ICardView> {
     );
   }
 
-  set id(value: string) {
-    this.container.dataset.id = value;
+  set id(_value: string) {
+    // no-op: view does not store model identifiers
   }
 
   get id(): string {
-    return this.container.dataset.id || "";
+    return "";
   }
 
   set title(value: string) {
@@ -33,7 +32,6 @@ export abstract class CardView extends Component<ICardView> {
   }
 
   set price(value: number | null) {
-    this.productPrice = value;
     if (value === null) {
       this.priceElement.textContent = "Бесценно";
     } else {
@@ -42,6 +40,6 @@ export abstract class CardView extends Component<ICardView> {
   }
 
   get price(): number | null {
-    return this.productPrice;
+    return null;
   }
 }
