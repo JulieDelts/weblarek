@@ -76,21 +76,13 @@ Presenter - презентер содержит основную логику п
 `render(data?: Partial<T>): HTMLElement` - Главный метод класса. Он принимает данные, которые необходимо отобразить в интерфейсе, записывает эти данные в поля класса и возвращает ссылку на DOM-элемент. Предполагается, что в классах, которые будут наследоваться от `Component` будут реализованы сеттеры для полей с данными, которые будут вызываться в момент вызова `render` и записывать данные в необходимые DOM элементы.  
 `setImage(element: HTMLImageElement, src: string, alt?: string): void` - утилитарный метод для модификации DOM-элементов `<img>`
 
-#### Класс Api
+#### Интерфейс IApi
 
-Содержит в себе базовую логику отправки запросов.
+Интерфейс для адаптера HTTP-запросов.
 
-Конструктор:  
-`constructor(baseUrl: string, options: RequestInit = {})` - В конструктор передается базовый адрес сервера и опциональный объект с заголовками запросов.
-
-Поля класса:  
-`baseUrl: string` - базовый адрес сервера  
-`options: RequestInit` - объект с заголовками, которые будут использованы для запросов.
-
-Методы:  
-`get(uri: string): Promise<object>` - выполняет GET запрос на переданный в параметрах ендпоинт и возвращает промис с объектом, которым ответил сервер  
-`post(uri: string, data: object, method: ApiPostMethods = 'POST'): Promise<object>` - принимает объект с данными, которые будут переданы в JSON в теле запроса, и отправляет эти данные на ендпоинт переданный как параметр при вызове метода. По умолчанию выполняется `POST` запрос, но метод запроса может быть переопределен заданием третьего параметра при вызове.  
-`handleResponse(response: Response): Promise<object>` - защищенный метод проверяющий ответ сервера на корректность и возвращающий объект с данными полученный от сервера или отклоненный промис, в случае некорректных данных.
+Методы интерфейса:  
+`get<T extends object>(uri: string): Promise<T>` - выполняет GET запрос на переданный в параметрах эндпоинт и возвращает промис с объектом указанного типа.  
+`post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>` - выполняет POST/PUT/DELETE запрос на указанный эндпоинт, отправляя данные в теле. Параметр `method` опционален и определяется типом `ApiPostMethods`.
 
 #### Класс EventEmitter
 
@@ -170,11 +162,55 @@ Presenter - презентер содержит основную логику п
 Поля интерфейса:
 `cardCatalog: HTMLTemplateElement`
 `cardPreview: HTMLTemplateElement`
-`cardBasket: HTMLTemplateElement`
+`cardCart: HTMLTemplateElement`
 `cart: HTMLTemplateElement`
 `order: HTMLTemplateElement`
 `contacts: HTMLTemplateElement`
 `success: HTMLTemplateElement`
+
+#### Интерфейсы ViewData
+
+Набор интерфейсов, описывающих структуру данных, которая передаётся в View через метод `render()`.
+
+`IProductCatalogueViewData` — данные для каталога товаров: `catalogue: HTMLElement[]`.
+
+`IModalViewData` — данные для модального окна: `content: HTMLElement`.
+
+`IHeaderViewData` — данные для шапки сайта: `counter: number`.
+
+`ICartViewData` — данные для корзины: `items: HTMLElement[]`, `total: number`.
+
+`ICardViewData` — базовые данные карточки товара: `id: string`, `title: string`, `price: number | null`.
+
+`ICatalogueCardViewData` — расширяет `ICardViewData`, добавляя `image: string`, `category: string`.
+
+`IPreviewCardViewData` — расширяет `ICatalogueCardViewData`, добавляя `description: string`, `isProductInBasket: boolean`.
+
+`ICartCardViewData` — расширяет `ICardViewData`, добавляя `index: number`.
+
+`IFormViewData` — пустой базовый интерфейс для форм.
+
+`IContactsFormViewData` — расширяет `IFormViewData`, добавляя `email: string`, `phone: string`.
+
+`IOrderFormViewData` — расширяет `IFormViewData`, добавляя `payment: string`, `address: string`.
+
+`ISuccessModalViewData` — данные для окна успешного заказа: `total: number`.
+
+#### Интерфейс IViewConstructors
+
+Интерфейс определяет набор конструкторов для всех View-компонентов, используемых в `ViewFactory`.
+
+Поля интерфейса:
+`ProductCatalogueView` — конструктор каталога товаров
+`ModalView` — конструктор модального окна
+`HeaderView` — конструктор шапки сайта
+`CartView` — конструктор корзины
+`OrderFormView` — конструктор формы заказа
+`ContactsFormView` — конструктор формы контактов
+`SuccessModalView` — конструктор окна успешного заказа
+`CatalogueCardView` — конструктор карточки каталога
+`CartCardView` — конструктор карточки корзины
+`PreviewCardView` — конструктор карточки превью
 
 #### ICardView
 
@@ -198,6 +234,8 @@ Presenter - презентер содержит основную логику п
 
 `valid: boolean`
 `errors: string`
+`setValidState(isValid: boolean): void`
+`setValidationError(error: string): void`
 
 #### Интерфейс IOrderFormView
 
@@ -253,7 +291,7 @@ phone: string - введённый номер телефона
 `customer: ICustomer` - приватное поле, хранящее объект с данными покупателя, структура которого соответствует интерфейсу ICustomer
 
 Методы класса:
-`getData(): { data: ICustomer }` передает данные покупателя. Метод возвращает объект `ICustomer`.
+`getData(): ICustomer` возвращает данные покупателя в виде объекта `ICustomer`.
 
 `setPayment(payment: PaymentMethod): void ` устанавливает способ оплаты. Параметром метода является способ оплаты (PaymentMethod), возвращаемого значения нет.
 
@@ -265,13 +303,13 @@ phone: string - введённый номер телефона
 
 `clearData(): void` очищает все данные покупателя, устанавливая все поля равными "". У метода нет параметров и возвращаемого значения.
 
-`validatePayment(): { isValid: boolean; error?: string }` проверяет, выбран ли способ оплаты
+`validatePayment(payment?: PaymentMethod): { isValid: boolean; error?: string }` проверяет, выбран ли способ оплаты.
 
-`validateAddress(): { isValid: boolean; error?: string }` проверяет, заполнен ли адрес
+`validateAddress(address?: string): { isValid: boolean; error?: string }` проверяет, заполнен ли адрес.
 
-`validateEmail(): { isValid: boolean; error?: string }` проверяет, заполнен ли email
+`validateEmail(email?: string): { isValid: boolean; error?: string }` проверяет, заполнен ли email.
 
-`validatePhone(): { isValid: boolean; error?: string }` проверяет, заполнен ли телефон
+`validatePhone(phone?: string): { isValid: boolean; error?: string }` проверяет, заполнен ли телефон.
 
 #### Класс Cart
 
@@ -344,7 +382,7 @@ phone: string - введённый номер телефона
 
 Фабрика для создания и управления представлениями приложения. Отвечает за инкапсуляцию логики создания View-компонентов из темплейтов, их размещение в модальных окнах или на странице, а также кеширование часто используемых представлений (модальное окно, каталог, шапка).
 
-Конструктор `constructor(events: IEvents, templates: IViewTemplates, galleryContainer: HTMLElement, modalContainer: HTMLElement, headerContainer: HTMLElement)` принимает брокер событий, объект с HTML-шаблонами и корневые DOM-элементы для галереи, модального окна и шапки.
+Конструктор `constructor(events: IEvents, templates: IViewTemplates, galleryContainer: HTMLElement, modalContainer: HTMLElement, headerContainer: HTMLElement, viewConstructors: IViewConstructors)` принимает брокер событий, объект с HTML-шаблонами, корневые DOM-элементы для галереи, модального окна и шапки, а также набор конструкторов представлений.
 
 Поля класса:
 `events: IEvents` - приватное поле, хранит ссылку на брокер событий для передачи в создаваемые представления.
@@ -352,6 +390,11 @@ phone: string - введённый номер телефона
 `catalogue: ProductCatalogueView | null` - приватное поле для кеширования экземпляра представления каталога. Значение null до первого вызова getCatalogue().
 `modal: ModalView | null` - приватное поле для кеширования экземпляра модального окна. Значение null до первого вызова getModal().
 `header: HeaderView | null` - приватное поле для кеширования экземпляра шапки страницы. Значение null до первого вызова getHeader().
+`cartView: CartView | null` - приватное поле для кеширования представления корзины.
+`orderForm: OrderFormView | null` - приватное поле для кеширования формы заказа.
+`contactsForm: ContactsFormView | null` - приватное поле для кеширования формы контактов.
+`successModalView: SuccessModalView | null` - приватное поле для кеширования окна успешного заказа.
+`viewConstructors: IViewConstructors` - приватное поле с набором конструкторов для всех представлений.
 `catalogueContainer: HTMLElement` - приватное поле, хранит DOM-элемент, в который будет рендериться каталог товаров.
 `modalContainer: HTMLElement` - приватное поле, хранит DOM-элемент, который является корневым контейнером для модального окна.
 `headerContainer: HTMLElement` - приватное поле, хранит DOM-элемент шапки страницы.
@@ -362,6 +405,14 @@ phone: string - введённый номер телефона
 `getModal(): ModalView` возвращает (или создает) экземпляр модального окна.
 
 `getHeader(): HeaderView` возвращает (или создает) экземпляр шапки страницы.
+
+`getCart(): CartView` возвращает (или создает) экземпляр представления корзины.
+
+`getOrderFormView(): OrderFormView` возвращает (или создает) экземпляр формы заказа.
+
+`getContactsFormView(): ContactsFormView` возвращает (или создает) экземпляр формы контактов.
+
+`getSuccessModalView(): SuccessModalView` возвращает (или создает) экземпляр успешного модального окна.
 
 `updateCatalogue(products: IProduct[]): void` обновляет содержимое каталога, создавая новые карточки CatalogueCardView для каждого переданного товара.
 
@@ -375,9 +426,9 @@ phone: string - введённый номер телефона
 
 `createCart(products: IProduct[], total: number): void` создает представление CartView со списком карточек CartCardView и открывает его в модальном окне.
 
-`createOrderForm(payment?: string, address?: string): void` создает форму OrderFormView для ввода адреса и способа оплаты и размещает её в модальном окне.
+`createOrderForm(): void` создает форму OrderFormView для ввода адреса и способа оплаты и размещает её в модальном окне.
 
-`createContactsForm(email?: string, phone?: string): void` создает форму ContactsFormView для ввода email и телефона и размещает её в модальном окне.
+`createContactsForm(): void` создает форму ContactsFormView для ввода email и телефона и размещает её в модальном окне.
 
 `createSuccessModal(total: number): void` создает представление SuccessModalView с итоговой суммой и открывает его в модальном окне.
 
@@ -422,16 +473,17 @@ phone: string - введённый номер телефона
 
 Представление карточки товара для детального просмотра в модальном окне. Расширяет CatalogueCardView. Добавляет описание и кнопку добавления/удаления товара из корзины.
 
-Конструктор `constructor(container: HTMLElement, events: IEvents)` принимает DOM-элемент и брокер событий.
+Конструктор `constructor(container: HTMLElement, onPreviewAction: () => void, closeModal: () => void)` принимает DOM-элемент, callback для переключения состояния товара и callback для закрытия модального окна.
 
 Поля класса:
 `descriptionElement: HTMLElement` - элемент описания
 `buttonElement: HTMLButtonElement` - элемент кнопки
-`inBasket: boolean` - флаг наличия товара в корзине
 
-Методы:
+Методы класса:
 `set description(value: string)` устанавливает текст описания товара.
-`set isProductInBasket(value: boolean)` устанавливает состояние кнопки, в зависимости от того, находится ли товар в корзине. Если true, кнопка меняет текст на "Удалить из корзины" и при клике генерирует событие `basket:remove`. Если false, текст становится "Купить" и генерируется `basket:add`. Кнопка блокируется, если цена товара null.
+`set isProductInBasket(value: boolean)` устанавливает состояние кнопки, в зависимости от того, находится ли товар в корзине. Если true, кнопка меняет текст на "Удалить из корзины". Если false, текст становится "Купить". Кнопка блокируется, если цена товара null.
+`set price(value: number | null)` обновляет цену и включает или отключает кнопку в зависимости от доступности товара.
+При клике на кнопку вызывается callback `preview:toggle` через фабрику и затем закрывается модальное окно.
 
 #### Класс CartCardView
 
@@ -592,54 +644,49 @@ phone: string - введённый номер телефона
 
 #### Класс Presenter
 
-Связывает модели данных с фабрикой представлений через брокер событий. Инициализирует обработчики всех основных событий, определяющих бизнес-логику приложения.
+Связывает модели данных с фабрикой представлений через брокер событий. Инициализирует обработчики событий и реализует бизнес-логику приложения.
 
 Конструктор:
-`constructor(events: IEvents, viewFactory: ViewFactory, productCatalogue: ProductCatalogue, cart: Cart, customer: Customer)` принимает все необходимые для работы компоненты и сразу инициализирует обработчики событий.
+`constructor(events: IEvents, viewFactory: IViewFactory, webApi: IWebLarekApi, productCatalogue: IProductCatalogueModel, cart: ICartModel, customer: ICustomerModel)` принимает брокер событий, фабрику представлений, API и модели приложения.
 
 Поля класса:
-`events: IEvents` - брокер событий
-`viewFactory: ViewFactory` - фабрика представлений
-`webApi: WebLarekApi` - API для запросов
-`productCatalogue: ProductCatalogue`- модель каталога
-`cart: Cart` - модель корзины
-`customer: Customer` - модель покупателя
+`viewFactory: IViewFactory` - фабрика представлений
+`webApi: IWebLarekApi` - API для запросов
+`productCatalogue: IProductCatalogueModel` - модель каталога товаров
+`cart: ICartModel` - модель корзины
+`customer: ICustomerModel` - модель покупателя
 
 Методы:
-`loadCatalogue(products: IProduct[]): void`загружает каталог товаров
+`loadCatalogue(): Promise<void>` загружает товары с API и отправляет их в каталог
 
-`initEventHandlers(events: IEvents): void` регистрирует обработчики событий
+`initEventHandlers(events: IEvents): void` регистрирует обработчики событий в момент создания Presenter
 
-`handleCatalogueChanged(data: { products: IProduct[] }): void` обновляет галерею и счётчик
+`handleCatalogueChanged(data: { products: IProduct[] }): void` обновляет список товаров каталога и счётчик корзины
 
-`handleCartChanged(data: { items: IProduct[]; count: number; total: number }): void` обновляет счётчик и корзину
+`handleCartChanged(data: { items: IProduct[]; count: number; total: number }): void` обновляет счётчик и содержимое корзины
 
-`handleProductSelected(data: { id: string }): void` открывает карточку товара
-
-`handleProductAddedToCart(data: { id: string }): void` добавляет товар в корзину
+`handleProductSelected(data: { id: string }): void` выбирает товар и открывает PreviewCard
 
 `handleProductRemovedFromCart(data: { id: string }): void` удаляет товар из корзины
 
-`handleCartOpened(): void` открывает корзину
+`handlePreviewToggle(): void` переключает выбранный товар в корзине (добавляет или удаляет)
+
+`handleCartOpened(): void` открывает корзину в модальном окне
 
 `handleOrderStart(): void` открывает форму заказа
 
-`handleOrderFormChange(data: IOrderFormView): void` обновляет модель и валидацию
+`handleOrderPaymentChanged(payment: string): void` обновляет способ оплаты в модели и форме, выполняет валидацию
 
-`handleOrderFormSubmit(data: IOrderFormView): void` переходит к форме контактов
+`handleOrderAddressChanged(address: string): void` обновляет адрес доставки в модели и форме, выполняет валидацию
 
-`handleContactsFormChange(data: IContactsFormView): void` обновляет модель и валидацию
+`updateOrderFormValidity(): void` пересчитывает валидность формы заказа
 
-`handleContactsFormSubmit(data: IContactsFormView): void` отправляет заказ
+`handleOrderFormSubmit(): void` открывает форму контактов
 
-`validateOrderData(): { isValid: boolean; errors: string[] }` валидирует способы оплаты и адрес
+`handleContactsEmailChanged(email: string): void` обновляет email в модели и форме, выполняет валидацию
 
-`validateContactsData(): { isValid: boolean; errors: string[] }` валидирует электронную почту и телефон
+`handleContactsPhoneChanged(phone: string): void` обновляет телефон в модели и форме, выполняет валидацию
 
-`handleModalClosed(): void` закрывает модальное окно
+`updateContactsFormValidity(): void` пересчитывает валидность формы контактов
 
-`updateOrderForm(isValid: boolean, errors: string[]): void` обновляет состояние формы заказа
-
-`updateContactsForm(isValid: boolean, errors: string[]): void` обновляет состояние формы контактов
-
-`submitOrder(): Promise<void>` отправляет заказ на сервер
+`submitOrder(): Promise<void>` отправляет заказ на сервер, очищает корзину и данные покупателя, открывает окно успешного заказа
