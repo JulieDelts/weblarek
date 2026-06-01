@@ -196,13 +196,13 @@ export interface ICustomerModel {
   setEmail(email: string): void;
   setPhone(phone: string): void;
   clearData(): void;
-  validatePayment(payment?: PaymentMethod): {
+  validatePayment(): {
     isValid: boolean;
     error?: string;
   };
-  validateAddress(address?: string): { isValid: boolean; error?: string };
-  validateEmail(email?: string): { isValid: boolean; error?: string };
-  validatePhone(phone?: string): { isValid: boolean; error?: string };
+  validateAddress(): { isValid: boolean; error?: string };
+  validateEmail(): { isValid: boolean; error?: string };
+  validatePhone(): { isValid: boolean; error?: string };
 }
 
 export interface ICartModel {

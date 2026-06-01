@@ -44,32 +44,29 @@ export class Customer implements ICustomerModel {
     };
   }
 
-  validatePayment(payment?: PaymentMethod): {
-    isValid: boolean;
-    error?: string;
-  } {
-    if (!payment) {
+  validatePayment(): { isValid: boolean; error?: string } {
+    if (!this.customer.payment) {
       return { isValid: false, error: "Не указан способ оплаты" };
     }
     return { isValid: true };
   }
 
-  validateAddress(address?: string): { isValid: boolean; error?: string } {
-    if (!address || address.trim() === "") {
+  validateAddress(): { isValid: boolean; error?: string } {
+    if (!this.customer.address || this.customer.address.trim() === "") {
       return { isValid: false, error: "Не указан адрес доставки" };
     }
     return { isValid: true };
   }
 
-  validateEmail(email?: string): { isValid: boolean; error?: string } {
-    if (!email || email.trim() === "") {
+  validateEmail(): { isValid: boolean; error?: string } {
+    if (!this.customer.email || this.customer.email.trim() === "") {
       return { isValid: false, error: "Не указана электронная почта" };
     }
     return { isValid: true };
   }
 
-  validatePhone(phone?: string): { isValid: boolean; error?: string } {
-    if (!phone || phone.trim() === "") {
+  validatePhone(): { isValid: boolean; error?: string } {
+    if (!this.customer.phone || this.customer.phone.trim() === "") {
       return { isValid: false, error: "Не указан телефон" };
     }
     return { isValid: true };

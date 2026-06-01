@@ -10,6 +10,7 @@ export class OrderFormView extends FormView implements IOrderFormView {
 
   constructor(container: HTMLElement, events: IEvents) {
     super(container, events);
+    this.setValidState(false);
 
     this.cardButtonElement = ensureElement<HTMLButtonElement>(
       'button[name="card"]',

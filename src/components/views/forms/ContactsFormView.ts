@@ -9,6 +9,7 @@ export class ContactsFormView extends FormView implements IContactsFormView {
 
   constructor(container: HTMLElement, events: IEvents) {
     super(container, events);
+    this.setValidState(false);
 
     this.emailInputElement = ensureElement<HTMLInputElement>(
       'input[name="email"]',

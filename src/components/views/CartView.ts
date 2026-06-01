@@ -27,6 +27,10 @@ export class CartView extends Component<ICartView> {
       this.container,
     );
 
+    this.listElement.innerHTML = '<p class="basket__empty">Корзина пуста</p>';
+    this.buttonElement.disabled = true;
+    this.totalElement.textContent = "0 синапсов";
+
     this.buttonElement.addEventListener("click", () => {
       events.emit("order:start");
     });

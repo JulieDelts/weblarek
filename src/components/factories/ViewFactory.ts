@@ -186,7 +186,6 @@ export class ViewFactory implements IViewFactory {
 
   createOrderForm(): void {
     const orderForm = this.getOrderFormView();
-    orderForm.setValidState(false);
     const modal = this.getModal();
     modal.content = orderForm.render();
     modal.open();
@@ -194,7 +193,6 @@ export class ViewFactory implements IViewFactory {
 
   createContactsForm(): void {
     const contactsForm = this.getContactsFormView();
-    contactsForm.setValidState(false);
     const modal = this.getModal();
     modal.content = contactsForm.render();
     modal.open();

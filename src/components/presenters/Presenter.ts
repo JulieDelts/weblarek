@@ -57,6 +57,22 @@ export class Presenter {
       this.handleContactsPhoneChanged.bind(this),
     );
     events.on("contacts:form:submit", this.submitOrder.bind(this));
+    events.on(
+      "customer:payment-changed",
+      this.handleCustomerPaymentChanged.bind(this),
+    );
+    events.on(
+      "customer:address-changed",
+      this.handleCustomerAddressChanged.bind(this),
+    );
+    events.on(
+      "customer:email-changed",
+      this.handleCustomerEmailChanged.bind(this),
+    );
+    events.on(
+      "customer:phone-changed",
+      this.handleCustomerPhoneChanged.bind(this),
+    );
   }
 
   private handleCatalogueChanged(data: { products: IProduct[] }): void {
@@ -103,9 +119,6 @@ export class Presenter {
   }
 
   private handleCartOpened(): void {
-    const products = this.cart.getAllProducts();
-    const total = products.reduce((sum, p) => sum + (p.price ?? 0), 0);
-    this.viewFactory.updateCart(products, total);
     const cart = this.viewFactory.getCart();
     const modal = this.viewFactory.getModal();
     modal.content = cart.render();
@@ -117,52 +130,25 @@ export class Presenter {
   }
 
   private handleOrderPaymentChanged(payment: string): void {
-    const validation = this.customer.validatePayment(payment as PaymentMethod);
-    if (validation.isValid) {
-      this.customer.setPayment(payment as PaymentMethod);
-    }
-
-    const orderForm = this.viewFactory.getOrderFormView();
-    orderForm.payment = payment;
-
-    if (validation.error) {
-      orderForm.setValidationError(validation.error);
-    } else {
-      orderForm.setValidationError("");
-    }
-
-    this.updateOrderFormValidity();
+    this.customer.setPayment(payment as PaymentMethod);
   }
 
   private handleOrderAddressChanged(address: string): void {
-    const validation = this.customer.validateAddress(address);
-    if (validation.isValid) {
-      this.customer.setAddress(address);
-    } else {
-      this.customer.setAddress("");
-    }
-    const orderForm = this.viewFactory.getOrderFormView();
-    orderForm.address = address;
-    if (validation.error) {
-      orderForm.setValidationError(validation.error);
-    } else {
-      orderForm.setValidationError("");
-    }
-    this.updateOrderFormValidity();
+    this.customer.setAddress(address);
   }
 
   private updateOrderFormValidity(): void {
-    const customerData = this.customer.getData();
     const orderForm = this.viewFactory.getOrderFormView();
-    const isPaymentValid = this.customer.validatePayment(
-      customerData.payment,
-    ).isValid;
-    const isAddressValid = this.customer.validateAddress(
-      customerData.address,
-    ).isValid;
-    const isFormValid = isPaymentValid && isAddressValid;
+    const paymentValidation = this.customer.validatePayment();
+    const addressValidation = this.customer.validateAddress();
+    const isFormValid = paymentValidation.isValid && addressValidation.isValid;
     orderForm.setValidState(isFormValid);
-    if (isFormValid) {
+
+    if (!paymentValidation.isValid) {
+      orderForm.setValidationError(paymentValidation.error ?? "");
+    } else if (!addressValidation.isValid) {
+      orderForm.setValidationError(addressValidation.error ?? "");
+    } else {
       orderForm.setValidationError("");
     }
   }
@@ -172,53 +158,51 @@ export class Presenter {
   }
 
   private handleContactsEmailChanged(email: string): void {
-    const validation = this.customer.validateEmail(email);
-    if (validation.isValid) {
-      this.customer.setEmail(email);
-    } else {
-      this.customer.setEmail("");
-    }
-    const contactsForm = this.viewFactory.getContactsFormView();
-    contactsForm.email = email;
-    if (validation.error) {
-      contactsForm.setValidationError(validation.error);
-    } else {
-      contactsForm.setValidationError("");
-    }
-    this.updateContactsFormValidity();
+    this.customer.setEmail(email);
   }
 
   private handleContactsPhoneChanged(phone: string): void {
-    const validation = this.customer.validatePhone(phone);
-    if (validation.isValid) {
-      this.customer.setPhone(phone);
-    } else {
-      this.customer.setPhone("");
-    }
-    const contactsForm = this.viewFactory.getContactsFormView();
-    contactsForm.phone = phone;
-    if (validation.error) {
-      contactsForm.setValidationError(validation.error);
-    } else {
-      contactsForm.setValidationError("");
-    }
-    this.updateContactsFormValidity();
+    this.customer.setPhone(phone);
   }
 
   private updateContactsFormValidity(): void {
-    const customerData = this.customer.getData();
     const contactsForm = this.viewFactory.getContactsFormView();
-    const isEmailValid = this.customer.validateEmail(
-      customerData.email,
-    ).isValid;
-    const isPhoneValid = this.customer.validatePhone(
-      customerData.phone,
-    ).isValid;
-    const isFormValid = isEmailValid && isPhoneValid;
+    const emailValidation = this.customer.validateEmail();
+    const phoneValidation = this.customer.validatePhone();
+    const isFormValid = emailValidation.isValid && phoneValidation.isValid;
     contactsForm.setValidState(isFormValid);
-    if (isFormValid) {
+
+    if (!emailValidation.isValid) {
+      contactsForm.setValidationError(emailValidation.error ?? "");
+    } else if (!phoneValidation.isValid) {
+      contactsForm.setValidationError(phoneValidation.error ?? "");
+    } else {
       contactsForm.setValidationError("");
     }
+  }
+
+  private handleCustomerPaymentChanged(payment: string): void {
+    const orderForm = this.viewFactory.getOrderFormView();
+    orderForm.payment = payment;
+    this.updateOrderFormValidity();
+  }
+
+  private handleCustomerAddressChanged(address: string): void {
+    const orderForm = this.viewFactory.getOrderFormView();
+    orderForm.address = address;
+    this.updateOrderFormValidity();
+  }
+
+  private handleCustomerEmailChanged(email: string): void {
+    const contactsForm = this.viewFactory.getContactsFormView();
+    contactsForm.email = email;
+    this.updateContactsFormValidity();
+  }
+
+  private handleCustomerPhoneChanged(phone: string): void {
+    const contactsForm = this.viewFactory.getContactsFormView();
+    contactsForm.phone = phone;
+    this.updateContactsFormValidity();
   }
 
   private async submitOrder(): Promise<void> {
